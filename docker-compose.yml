@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  development:
+    build:
+      context: ./backend
+      target: development
+      dockerfile: ./Dockerfile
+    image: backend_development
+    container_name: backend_development
+    hostname: $BACKEND_HOST
+    restart: unless-stopped
+    networks: [backend-network]
+    expose: [$BACKEND_PORT]
+    volumes: ['./backend:/usr/src/app']
+    environment:
+      BACKEND_HOST: $BACKEND_HOST
+      BACKEND_PORT: $BACKEND_PORT
+
+  production:
+    build:
+      context: ./backend
+      target: production
+      dockerfile: ./Dockerfile
+    image: backend_production
+    container_name: backend_production
+    hostname: $BACKEND_HOST
+    restart: unless-stopped
+    networks: [backend-network]
+    expose: [$BACKEND_PORT]
+    environment:
+      BACKEND_HOST: $BACKEND_HOST
+      BACKEND_PORT: $BACKEND_PORT
+
+networks:
+  backend-network:
+    driver: bridge
+    name: backend-network
