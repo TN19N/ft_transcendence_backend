@@ -21,7 +21,7 @@ jobs:
         run: docker ps
 
       - name: debug 2
-        run: docker exec -it backend_development sh -c "ls -la"
+        run: docker exec -i backend_development sh -c "ls -la"
 
       # - name: Run Prettier
       #   run: docker run backend_development sh -c "npm run format:check"
