@@ -2,38 +2,41 @@ name: Test The Application
 
 on: 
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
   push:
-    branches: [ dev ]
+    branches:
+      - dev
 
 jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout git repository
         uses: actions/checkout@v3
 
+      - name: Set up .env for Docker Compose
+        run: cp .env.example .env
+
       - name: Build the Docker development image 
-        run: export $(grep -v '^#' .env.example | xargs) && docker compose up --build --detach development
+        run: docker compose build test
 
-      - name: debug
-        run: docker ps
+      - name: Run Prettier
+        run: docker run backend_test sh -c "npm run format:check"
 
-      - name: debug 2
-        run: docker exec -i backend_development sh -c "ls -la"
-
-      # - name: Run Prettier
-      #   run: docker run backend_development sh -c "npm run format:check"
-
-      # - name: Run Linter
-      #   run: docker run backend_development sh -c "npm run lint:check"
+      - name: Run Linter
+        run: docker run backend_test sh -c "npm run lint:check"
 
       - name: Run  unite tests
-        run: docker run backend_development sh -c "npm run test"
+        run: docker run backend_test sh -c "npm run test"
 
       - name: Run e2e tests
-        run: docker run backend_development sh -c "npm run test:e2e"
+        run: docker run backend_test sh -c "npm run test:e2e"
 
       - name: Build & Run the Docker production image
         run: docker compose up --build --detach production
+      
+      - name: Clear All
+        run: docker compose down
