@@ -2,11 +2,9 @@ name: Test The Application
 
 on: 
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
   push:
-    branches:
-      - dev
+    branches: [ dev ]
 
 jobs:
   test:
@@ -20,20 +18,20 @@ jobs:
       - name: Set up .env for Docker Compose
         run: cp .env.example .env
 
-      - name: Build the Docker development image 
+      - name: Build the Docker test image 
         run: docker compose build test
 
       - name: Run Prettier
-        run: docker run backend_test sh -c "npm run format:check"
+        run: docker compose run test npm run format:check
 
       - name: Run Linter
-        run: docker run backend_test sh -c "npm run lint:check"
+        run: docker compose run test npm run lint:check
 
       - name: Run  unite tests
-        run: docker run backend_test sh -c "npm run test"
+        run: docker compose run test npm run test
 
       - name: Run e2e tests
-        run: docker run backend_test sh -c "npm run test:e2e"
+        run: docker compose run test npm run test:e2e
 
       - name: Build & Run the Docker production image
         run: docker compose up --build --detach production
