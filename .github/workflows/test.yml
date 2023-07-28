@@ -14,6 +14,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
+      - name: Load environment variables
+        run: export $(grep -v '^#' .env.example | xargs)
+
       - name: Build & Run the Docker development image 
         run: docker compose up --build development
 
