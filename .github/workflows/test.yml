@@ -1,0 +1,40 @@
+name: Test The Application
+
+on: 
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ dev ]
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout git repository
+        uses: actions/checkout@v3
+
+      - name: Set up .env for Docker Compose
+        run: cp .env.example .env
+
+      - name: Build the Docker test image 
+        run: docker compose build test
+
+      - name: Run Prettier
+        run: docker compose run test npm run format:check
+
+      - name: Run Linter
+        run: docker compose run test npm run lint:check
+
+      - name: Run  unite tests
+        run: docker compose run test npm run test
+
+      - name: Run e2e tests
+        run: docker compose run test npm run test:e2e
+
+      - name: Build & Run the Docker production image
+        run: docker compose up --build --detach production
+      
+      - name: Clear All
+        run: docker compose down

@@ -32,6 +32,21 @@ services:
       BACKEND_HOST: $BACKEND_HOST
       BACKEND_PORT: $BACKEND_PORT
 
+  test:
+    build: 
+      context: ./backend
+      target: build
+      dockerfile: ./Dockerfile
+    image: backend_test
+    container_name: backend_test
+    hostname: $BACKEND_HOST
+    restart: unless-stopped
+    networks: [backend-network]
+    expose: [$BACKEND_PORT]
+    environment:
+      BACKEND_HOST: $BACKEND_HOST
+      BACKEND_PORT: $BACKEND_PORT
+
 networks:
   backend-network:
     driver: bridge
