@@ -1,11 +1,18 @@
 name: Test The Application
 
-on: [pull_request]
+on: 
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ dev ]
 
 jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
