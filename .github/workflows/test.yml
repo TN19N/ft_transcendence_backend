@@ -14,20 +14,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Build & Run the Docker development image 
-        run: export $(grep -v '^#' .env.example | xargs) && docker compose up --build --detach development
+      - name: Build the Docker development image 
+        run: export $(grep -v '^#' .env.example | xargs) && docker compose build development
 
       - name: Run Prettier
-        run: docker exec backend_development sh -c "npm run format:check"
+        run: docker run backend_development sh -c "npm run format:check"
 
       - name: Run Linter
-        run: docker exec backend_development sh -c "npm run lint:check"
+        run: docker run backend_development sh -c "npm run lint:check"
 
       - name: Run  unite tests
-        run: docker exec backend_development sh -c "npm run test"
+        run: docker run backend_development sh -c "npm run test"
 
       - name: Run e2e tests
-        run: docker exec backend_development sh -c "npm run test:e2e"
+        run: docker run backend_development sh -c "npm run test:e2e"
 
       - name: Build & Run the Docker production image
         run: docker compose up --build --detach production
