@@ -16,6 +16,8 @@ jobs:
       
       - name: Load environment variables
         run: export $(grep -v '^#' .env.example | xargs)
+        run: echo BACKEND_PORT $BACKEND_PORT
+        run: echo BACKEND_HOST $BACKEND_HOST
 
       - name: Build & Run the Docker development image 
         run: docker compose up --build development
