@@ -13,15 +13,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      
-      - name: Load environment variables
-        run: export $(grep -v '^#' .env.example | xargs)
-
-      - name: Check if environment variables are loaded
-        run: echo $BACKEND_PORT $BACKEND_HOST
 
       - name: Build & Run the Docker development image 
-        run: docker compose up --build development
+        run: export $(grep -v '^#' .env.example | xargs) && docker compose up --build development
 
       - name: Run Prettier
         run: docker exec backend_development sh -c "npm run format:check"
