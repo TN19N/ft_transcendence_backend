@@ -10,6 +10,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      database-client:
+        condition: service_healthy
     image: backend_development
     container_name: backend_development
     hostname: $BACKEND_HOST
@@ -79,13 +81,30 @@ services:
       interval: 1s
       retries: 5
       start_period: 2s
+  # database client
+  database-client:
+    depends_on:
+      database:
+        condition: service_healthy
+    image: dbeaver/cloudbeaver:23.0.4
+    container_name: database-client
+    restart: unless-stopped
+    expose: [8978]
+    ports: [8978:8978]
+    networks: [backend-network]
+    volumes: [database-client-data:/opt/cloudbeaver/data]
+    healthcheck:
+      test: curl -f http://localhost:8978
+      interval: 1s
+      retries: 5
+      start_period: 2s
 
 networks:
   backend-network:
-    driver: bridge
     name: backend-network
 
 volumes:
   database-data:
-    driver: local
     name: database-data
+  database-client-data:
+    name: database-client-data

@@ -3,8 +3,6 @@ name: Test The Application
 on: 
   pull_request:
     branches: [ main ]
-  push:
-    branches: [ dev ]
 
 jobs:
   test:
@@ -35,6 +33,9 @@ jobs:
 
       - name: Build & Run the Docker production image
         run: docker compose up --build --detach production
-      
+
+      - name: Build & Run the dtabase-client Docker image
+        run: docker compose up --build --detach database-client
+
       - name: Clear All
         run: docker compose down
