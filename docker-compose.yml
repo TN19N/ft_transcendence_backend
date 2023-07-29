@@ -79,6 +79,18 @@ services:
       interval: 1s
       retries: 5
       start_period: 2s
+  # database client
+  database-client:
+    depends_on:
+      database:
+        condition: service_healthy
+    image: dbeaver/cloudbeaver:23.0.4
+    container_name: database-client
+    restart: unless-stopped
+    expose: [8978]
+    ports: [8978:8978]
+    networks: [backend-network]
+    volumes: [database-client-data:/opt/cloudbeaver/data]
 
 networks:
   backend-network:
@@ -89,3 +101,6 @@ volumes:
   database-data:
     driver: local
     name: database-data
+  database-client-data:
+    driver: local
+    name: database-client-data
