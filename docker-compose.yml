@@ -1,27 +1,36 @@
 version: '3.8'
 
 services:
+  # backend for development
   development:
     build:
       context: ./backend
       target: development
       dockerfile: ./Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
     image: backend_development
     container_name: backend_development
     hostname: $BACKEND_HOST
     restart: unless-stopped
     networks: [backend-network]
     expose: [$BACKEND_PORT]
+    ports: [$BACKEND_PORT:$BACKEND_PORT]
     volumes: ['./backend:/usr/src/app']
     environment:
+      DATABASE_URL: "postgresql://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_NAME?schema=public"
       BACKEND_HOST: $BACKEND_HOST
       BACKEND_PORT: $BACKEND_PORT
-
+  # backend for production
   production:
     build:
       context: ./backend
       target: production
-      dockerfile: ./Dockerfile
+      dockerfile: Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
     image: backend_production
     container_name: backend_production
     hostname: $BACKEND_HOST
@@ -29,14 +38,18 @@ services:
     networks: [backend-network]
     expose: [$BACKEND_PORT]
     environment:
+      DATABASE_URL: "postgresql://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_NAME?schema=public"
       BACKEND_HOST: $BACKEND_HOST
       BACKEND_PORT: $BACKEND_PORT
-
+  # backend for testing
   test:
     build: 
       context: ./backend
       target: build
-      dockerfile: ./Dockerfile
+      dockerfile: Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
     image: backend_test
     container_name: backend_test
     hostname: $BACKEND_HOST
@@ -44,10 +57,35 @@ services:
     networks: [backend-network]
     expose: [$BACKEND_PORT]
     environment:
+      DATABASE_URL: "postgresql://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_NAME?schema=public"
       BACKEND_HOST: $BACKEND_HOST
       BACKEND_PORT: $BACKEND_PORT
+  # database
+  database:
+    image: postgres:15-alpine
+    container_name: database
+    hostname: $DATABASE_HOST
+    restart: unless-stopped
+    expose: [$DATABASE_PORT]
+    volumes: [database-data:/var/lib/postgresql/data]
+    networks: [backend-network]
+    environment:
+      POSTGRES_USER: $DATABASE_USER
+      POSTGRES_PASSWORD: $DATABASE_PASSWORD
+      POSTGRES_DB: $DATABASE_NAME
+      PGPORT: $DATABASE_PORT
+    healthcheck:
+      test: pg_isready -U $DATABASE_USER -d $DATABASE_NAME
+      interval: 1s
+      retries: 5
+      start_period: 2s
 
 networks:
   backend-network:
     driver: bridge
     name: backend-network
+
+volumes:
+  database-data:
+    driver: local
+    name: database-data
