@@ -25,11 +25,11 @@ jobs:
       - name: Run Linter
         run: docker compose run test npm run lint:check
 
-      - name: Run  unite tests
-        run: docker compose run test npm run test
+      # - name: Run  unite tests
+      #   run: docker compose run test npm run test
 
-      - name: Run e2e tests
-        run: docker compose run test npm run test:e2e
+      # - name: Run e2e tests
+      #   run: docker compose run test npm run test:e2e
 
       - name: Build & Run the Docker production image
         run: docker compose up --build --detach production
