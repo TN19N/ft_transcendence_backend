@@ -14,6 +14,14 @@ export class UserRepository {
     });
   }
 
+  async getUserById(id: string): Promise<User | null> {
+    return await this.databaseService.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+  }
+
   async createNewUser(name: string, intra42Id: number): Promise<User> {
     return this.databaseService.user.create({
       data: {

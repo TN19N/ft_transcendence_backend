@@ -54,4 +54,4 @@ RUN npm prune --production
 
 USER node
 
-CMD npx prsima deploay && node dist/main.js
+CMD npx prisma migrate deploy && node dist/main.js
