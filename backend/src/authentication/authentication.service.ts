@@ -4,6 +4,7 @@ import axios from 'axios';
 import { UserRepository } from 'src/user/user.repository';
 import * as fs from 'fs';
 import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './interface';
 
 @Injectable()
 export class AuthenticationService {
@@ -37,7 +38,12 @@ export class AuthenticationService {
     return user;
   }
 
+  async validateJwt(payload: JwtPayload): Promise<User | null> {
+    return await this.userRepository.getUserById(payload.sub);
+  }
+
   async generateLoginToken(userId: string): Promise<string> {
-    return await this.jwtService.signAsync({ sub: userId });
+    const payload: JwtPayload = { sub: userId };
+    return await this.jwtService.signAsync(payload);
   }
 }
