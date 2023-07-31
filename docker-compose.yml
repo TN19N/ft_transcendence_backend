@@ -44,6 +44,7 @@ services:
     restart: unless-stopped
     networks: [backend-network]
     expose: [$BACKEND_PORT]
+    ports: [$BACKEND_PORT:$BACKEND_PORT]
     environment:
       DATABASE_URL: "postgresql://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_NAME?schema=public"
       BACKEND_HOST: $BACKEND_HOST
