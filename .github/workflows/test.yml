@@ -13,29 +13,25 @@ jobs:
       - name: Checkout git repository
         uses: actions/checkout@v3
 
-      - name: Set up .env for Docker Compose
-        run: cp .env.example .env
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
 
-      - name: Build the Docker test image 
-        run: docker compose build test
-
-      - name: Run Prettier
-        run: docker compose run test npm run format:check
-
-      - name: Run Linter
-        run: docker compose run test npm run lint:check
-
-      # - name: Run  unite tests
-      #   run: docker compose run test npm run test
-
-      # - name: Run e2e tests
-      #   run: docker compose run test npm run test:e2e
-
-      - name: Build & Run the Docker production image
-        run: docker compose up --build --detach production
-
-      - name: Build & Run the dtabase-client Docker image
-        run: docker compose up --build --detach database-client
-
-      - name: Clear All
-        run: docker compose down
+      - name: Update npm
+        run: npm install -g npm@latest
+        
+      - name: Install dependencies
+        run: |
+          cd ./backend
+          npm install
+      
+      - name: Run format check
+        run: |
+          cd ./backend
+          npm run format:check
+      
+      - name: Run lint check
+        run: |
+          cd ./backend
+          npm run lint:check
