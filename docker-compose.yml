@@ -6,7 +6,6 @@ services:
     build:
       context: ./backend
       target: development
-      dockerfile: ./Dockerfile
     depends_on:
       database:
         condition: service_healthy
@@ -16,7 +15,7 @@ services:
     container_name: backend_development
     hostname: $BACKEND_HOST
     restart: unless-stopped
-    networks: [backend-network]
+    networks: [server-network]
     expose: [$BACKEND_PORT]
     ports: [$BACKEND_PORT:$BACKEND_PORT]
     volumes: ['./backend:/usr/src/app']
@@ -24,17 +23,16 @@ services:
       DATABASE_URL: "postgresql://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_NAME?schema=public"
       BACKEND_HOST: $BACKEND_HOST
       BACKEND_PORT: $BACKEND_PORT
-      FRONTEND_URL: $FRONTEND_URL
       INTRA42_CLIENT_ID: $INTRA42_CLIENT_ID
       INTRA42_CLIENT_SECRET: $INTRA42_CLIENT_SECRET
-      INTRA42_CALLBACK_URL: $INTRA42_CALLBACK_URL
       JWT_SECRET: $JWT_SECRET
+      INTRA42_CALLBACK_URL: "http://localhost:$BACKEND_PORT/api/auth/intra42"
+      FRONTEND_URL: "http://www.google.com"
   # backend for production
   production:
     build:
       context: ./backend
       target: production
-      dockerfile: Dockerfile
     depends_on:
       database:
         condition: service_healthy
@@ -42,41 +40,15 @@ services:
     container_name: backend_production
     hostname: $BACKEND_HOST
     restart: unless-stopped
-    networks: [backend-network]
-    expose: [$BACKEND_PORT]
-    ports: [$BACKEND_PORT:$BACKEND_PORT]
-    environment:
-      DATABASE_URL: "postgresql://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_NAME?schema=public"
-      BACKEND_HOST: $BACKEND_HOST
-      BACKEND_PORT: $BACKEND_PORT
-      FRONTEND_URL: $FRONTEND_URL
-      INTRA42_CLIENT_ID: $INTRA42_CLIENT_ID
-      INTRA42_CLIENT_SECRET: $INTRA42_CLIENT_SECRET
-      INTRA42_CALLBACK_URL: $INTRA42_CALLBACK_URL
-      JWT_SECRET: $JWT_SECRET
-  # backend for testing
-  test:
-    build: 
-      context: ./backend
-      target: build
-      dockerfile: Dockerfile
-    depends_on:
-      database:
-        condition: service_healthy
-    image: backend_test
-    container_name: backend_test
-    hostname: $BACKEND_HOST
-    restart: unless-stopped
-    networks: [backend-network]
+    networks: [server-network]
     expose: [$BACKEND_PORT]
     environment:
       DATABASE_URL: "postgresql://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_NAME?schema=public"
       BACKEND_HOST: $BACKEND_HOST
       BACKEND_PORT: $BACKEND_PORT
-      FRONTEND_URL: $FRONTEND_URL
       INTRA42_CLIENT_ID: $INTRA42_CLIENT_ID
       INTRA42_CLIENT_SECRET: $INTRA42_CLIENT_SECRET
-      INTRA42_CALLBACK_URL: $INTRA42_CALLBACK_URL
+      INTRA42_CALLBACK_URL: "http://$SERVER_HOST:$SERVER_PORT/api/auth/intra42"
       JWT_SECRET: $JWT_SECRET
   # database
   database:
@@ -86,7 +58,7 @@ services:
     restart: unless-stopped
     expose: [$DATABASE_PORT]
     volumes: [database-data:/var/lib/postgresql/data]
-    networks: [backend-network]
+    networks: [server-network]
     environment:
       POSTGRES_USER: $DATABASE_USER
       POSTGRES_PASSWORD: $DATABASE_PASSWORD
@@ -105,9 +77,9 @@ services:
     image: dbeaver/cloudbeaver:23.0.4
     container_name: database-client
     restart: unless-stopped
-    expose: [8978]
-    ports: [8978:8978]
-    networks: [backend-network]
+    expose: [$DATABASE_CLIENT_PORT]
+    ports: [$DATABASE_CLIENT_PORT:$DATABASE_CLIENT_PORT]
+    networks: [server-network]
     volumes: [database-client-data:/opt/cloudbeaver/data]
     healthcheck:
       test: curl -f http://localhost:8978
@@ -116,11 +88,13 @@ services:
       start_period: 2s
 
 networks:
-  backend-network:
-    name: backend-network
+  server-network:
+    name: server-network
 
 volumes:
   database-data:
     name: database-data
+    external: true
   database-client-data:
     name: database-client-data
+    external: true
