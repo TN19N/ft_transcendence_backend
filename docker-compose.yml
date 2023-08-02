@@ -11,8 +11,6 @@ services:
         condition: service_healthy
       database-client:
         condition: service_healthy
-    image: backend_development
-    container_name: backend_development
     hostname: $BACKEND_HOST
     restart: unless-stopped
     networks: [server-network]
@@ -35,8 +33,6 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    image: backend_production
-    container_name: backend_production
     hostname: $BACKEND_HOST
     restart: unless-stopped
     networks: [server-network]
@@ -52,7 +48,6 @@ services:
   # database
   database:
     image: postgres:15-alpine
-    container_name: database
     hostname: $DATABASE_HOST
     restart: unless-stopped
     expose: [$DATABASE_PORT]
@@ -74,7 +69,6 @@ services:
       database:
         condition: service_healthy
     image: dbeaver/cloudbeaver:23.0.4
-    container_name: database-client
     restart: unless-stopped
     expose: [$DATABASE_CLIENT_PORT]
     ports: [$DATABASE_CLIENT_PORT:$DATABASE_CLIENT_PORT]
