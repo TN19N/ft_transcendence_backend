@@ -26,8 +26,12 @@ export class AuthenticationController {
   ) {}
 
   @Get('intra42')
+  @HttpCode(HttpStatus.TEMPORARY_REDIRECT)
   @UseGuards(Intra42Guard)
-  async intra42(@GetUserId() userId: string, @Res() response: Response) {
+  async intra42(
+    @GetUserId() userId: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const loginToken = await this.authenticationService.generateLoginToken(
       userId,
     );
