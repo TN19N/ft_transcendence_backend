@@ -38,6 +38,6 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   // Listen
-  await app.listen(configurationService.get('BACKEND_HOST'));
+  await app.listen(configurationService.get('BACKEND_PORT'));
 }
 bootstrap();
