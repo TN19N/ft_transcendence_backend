@@ -8,7 +8,6 @@ import { ConfigurationService } from './configuration.service';
     ConfigModule.forRoot({
       validationSchema: Joi.object({
         BACKEND_PORT: Joi.number().required(),
-        BACKEND_HOST: Joi.string().required(),
         DATABASE_URL: Joi.string().required(),
         INTRA42_CLIENT_ID: Joi.string().required(),
         INTRA42_CLIENT_SECRET: Joi.string().required(),
