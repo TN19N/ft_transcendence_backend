@@ -13,12 +13,34 @@ model User {
   createdAt DateTime  @default(now())
 
   profile Profile?
+  preferences Preferences?
+  sensitiveData SensitiveData?
 }
 
 model Profile {
   id        String    @id
-  name      String    @unique
   updatedAt DateTime  @updatedAt
 
+  name      String    @unique
+
   user      User      @relation(fields: [id], references: [id], onDelete: Cascade)
+}
+
+model Preferences {
+  id                                String    @id
+  updatedAt                         DateTime  @updatedAt
+
+  isTwoFactorAuthenticationEnabled  Boolean   @default(false)
+
+  user                              User      @relation(fields: [id], references: [id], onDelete: Cascade)
+}
+
+model SensitiveData {
+  id        String    @id
+  updatedAt DateTime  @updatedAt
+
+  twoFactorAuthenticationSecret String?
+  iv                            String?
+
+  user     User       @relation(fields: [id], references: [id], onDelete: Cascade)
 }
