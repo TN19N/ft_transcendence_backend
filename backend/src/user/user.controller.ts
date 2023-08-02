@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
+  Post,
   Query,
   UseFilters,
   UseGuards,
@@ -36,5 +37,11 @@ export class UserController {
     } else {
       throw new NotFoundException(`User with id ${id ?? userId} not found`);
     }
+  }
+
+  @Post('turnOn2fa')
+  @HttpCode(HttpStatus.CREATED)
+  async turnOn2fa(@GetUserId() userId: string) {
+    return await this.userService.turnOn2fa(userId);
   }
 }
