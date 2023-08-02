@@ -32,7 +32,7 @@ export class AuthenticationController {
       userId,
     );
     response.setHeader('Set-Cookie', `Authentication=${loginToken}; Path=/`);
-    response.redirect(this.configurationService.get('FRONTEND_URL'));
+    response.redirect(this.configurationService.get('FRONTEND_URL') + '/home');
   }
 
   @Post('logout')

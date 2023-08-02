@@ -31,6 +31,8 @@ export class UserRepository {
             name: name,
           },
         },
+        preferences: { create: {} },
+        sensitiveData: { create: {} },
       },
     });
   }
