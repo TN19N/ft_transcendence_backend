@@ -5,12 +5,16 @@ import { UserRepository } from 'src/user/user.repository';
 import * as fs from 'fs';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interface';
+import { createDecipheriv } from 'crypto';
+import { ConfigurationService } from 'src/configuration/configuration.service';
+import { authenticator } from 'otplib';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
     private userRepository: UserRepository,
     private jwtService: JwtService,
+    private configurationService: ConfigurationService,
   ) {}
 
   async validateIntra42User(profile: any): Promise<User> {
@@ -42,8 +46,43 @@ export class AuthenticationService {
     return await this.userRepository.getUserById(payload.sub);
   }
 
-  async generateLoginToken(userId: string): Promise<string> {
-    const payload: JwtPayload = { sub: userId };
+  async validate2fa(userId: string, twofaCode: string): Promise<boolean> {
+    const sensitiveData = await this.userRepository.getSensitiveData(userId);
+
+    let isValid = false;
+    if (sensitiveData.twoFactorAuthenticationSecret && sensitiveData.iv) {
+      const { twoFactorAuthenticationSecret, iv } = sensitiveData;
+
+      const ivBuffer = Buffer.from(iv, 'hex');
+      const decipher = createDecipheriv(
+        'aes-256-cbc',
+        this.configurationService.get('ENCRYPT_KEY'),
+        ivBuffer,
+      );
+
+      const secret =
+        decipher.update(twoFactorAuthenticationSecret, 'hex', 'utf-8') +
+        decipher.final('utf-8');
+
+      isValid = authenticator.verify({
+        token: twofaCode,
+        secret: secret,
+      });
+    }
+
+    return isValid;
+  }
+
+  async generateLoginToken(
+    userId: string,
+    is2faEnabled: boolean | undefined = undefined,
+  ): Promise<string> {
+    if (is2faEnabled === undefined) {
+      const preferences = await this.userRepository.getPreferences(userId);
+      is2faEnabled = preferences.isTwoFactorAuthenticationEnabled;
+    }
+
+    const payload: JwtPayload = { sub: userId, tfa: is2faEnabled };
     return await this.jwtService.signAsync(payload);
   }
 }

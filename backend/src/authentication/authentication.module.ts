@@ -1,16 +1,16 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { AuthenticationController } from './authentication.controller';
 import { ConfigurationModule } from 'src/configuration/configuration.module';
 import { UserModule } from 'src/user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigurationService } from 'src/configuration/configuration.service';
-import { Intra42Strategy, JwtStrategy } from './strategy';
+import { Intra42Strategy, Jwt2faStrategy, JwtStrategy } from './strategy';
 
 @Module({
   imports: [
     ConfigurationModule,
-    UserModule,
+    forwardRef(() => UserModule),
     JwtModule.registerAsync({
       imports: [ConfigurationModule],
       inject: [ConfigurationService],
@@ -23,6 +23,12 @@ import { Intra42Strategy, JwtStrategy } from './strategy';
     }),
   ],
   controllers: [AuthenticationController],
-  providers: [AuthenticationService, Intra42Strategy, JwtStrategy],
+  providers: [
+    AuthenticationService,
+    Intra42Strategy,
+    JwtStrategy,
+    Jwt2faStrategy,
+  ],
+  exports: [AuthenticationService],
 })
 export class AuthenticationModule {}

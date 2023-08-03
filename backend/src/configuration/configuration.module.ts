@@ -14,6 +14,7 @@ import { ConfigurationService } from './configuration.service';
         INTRA42_CALLBACK_URL: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
         FRONTEND_URL: Joi.string().required(),
+        ENCRYPT_KEY: Joi.string().length(32).required(),
       }),
     }),
   ],

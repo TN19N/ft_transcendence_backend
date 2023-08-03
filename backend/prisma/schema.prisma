@@ -8,12 +8,12 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  intra42Id Int       @unique
-  createdAt DateTime  @default(now())
+  id            String    @id @default(uuid())
+  intra42Id     Int       @unique
+  createdAt     DateTime  @default(now())
 
-  profile Profile?
-  preferences Preferences?
+  profile       Profile?
+  preferences   Preferences?
   sensitiveData SensitiveData?
 }
 
@@ -36,11 +36,11 @@ model Preferences {
 }
 
 model SensitiveData {
-  id        String    @id
-  updatedAt DateTime  @updatedAt
+  id                            String    @id
+  updatedAt                     DateTime  @updatedAt
 
   twoFactorAuthenticationSecret String?
   iv                            String?
 
-  user     User       @relation(fields: [id], references: [id], onDelete: Cascade)
+  user                          User      @relation(fields: [id], references: [id], onDelete: Cascade)
 }

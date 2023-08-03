@@ -7,7 +7,7 @@ import { JwtPayload } from '../interface';
 import { AuthenticationService } from '../authentication.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class Jwt2faStrategy extends PassportStrategy(Strategy, 'jwt2fa') {
   constructor(
     configurationService: ConfigurationService,
     private authenticationService: AuthenticationService,
@@ -23,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayload) {
-    if (payload.tfa == false) {
+    if (payload.tfa == true) {
       return await this.authenticationService.validateJwt(payload);
     } else {
       return null;
