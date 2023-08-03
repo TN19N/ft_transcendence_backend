@@ -89,7 +89,5 @@ networks:
 volumes:
   database-data:
     name: database-data
-    external: true
   database-client-data:
     name: database-client-data
-    external: true

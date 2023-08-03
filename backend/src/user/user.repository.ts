@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Preferences, Profile, SensitiveData, SensitiveDataPayload, User } from '@prisma/client';
+import {
+  Preferences,
+  Prisma,
+  Profile,
+  SensitiveData,
+  User,
+} from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
@@ -61,7 +67,10 @@ export class UserRepository {
     });
   }
 
-  updateProfile(id: string, profile: Profile): Promise<Profile> {
+  updateProfile(
+    id: string,
+    profile: Prisma.ProfileUpdateInput,
+  ): Promise<Profile> {
     return this.databaseService.profile.update({
       where: {
         id: id,
@@ -72,7 +81,7 @@ export class UserRepository {
 
   updatePreferences(
     id: string,
-    preferences: Preferences,
+    preferences: Prisma.PreferencesUpdateInput,
   ): Promise<Preferences> {
     return this.databaseService.preferences.update({
       where: {
@@ -82,7 +91,10 @@ export class UserRepository {
     });
   }
 
-  updateSensitiveData(id: string, sensitiveData: SensitiveData) {
+  updateSensitiveData(
+    id: string,
+    sensitiveData: Prisma.SensitiveDataUpdateInput,
+  ) {
     return this.databaseService.sensitiveData.update({
       where: {
         id: id,

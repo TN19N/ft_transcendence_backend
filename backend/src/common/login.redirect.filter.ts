@@ -17,8 +17,12 @@ export class LoginRedirectFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const status = exception.getStatus();
 
-    response
-      .status(status)
-      .redirect(this.configurationService.get('FRONTEND_URL') + '/login');
+    if (exception.message === 'jwt') {
+      response
+        .status(status)
+        .redirect(this.configurationService.get('FRONTEND_URL') + '/login');
+    } else {
+      response.status(status).json(exception.getResponse());
+    }
   }
 }
