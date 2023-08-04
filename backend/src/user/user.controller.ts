@@ -1,36 +1,74 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  Head,
+  Header,
+  Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
   Post,
   Query,
+  Res,
+  StreamableFile,
   UnauthorizedException,
-  UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { GetUserId } from 'src/authentication/decorator';
 import { JwtGuard } from 'src/authentication/guard';
-import { LoginRedirectFilter } from 'src/common';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
-import { TwofaDto } from './dto';
+import { TwofaDto, UpdateProfileDto } from './dto';
 import { AuthenticationService } from 'src/authentication/authentication.service';
+import { Response } from 'express';
+import { createReadStream, existsSync } from 'fs';
+import { join } from 'path';
 
 @Controller('user')
 @ApiTags('user')
 @UseGuards(JwtGuard)
 @ApiCookieAuth('Authentication')
-@UseFilters(LoginRedirectFilter)
 export class UserController {
   constructor(
     private userService: UserService,
     private userRepository: UserRepository,
     private authenticationService: AuthenticationService,
   ) {}
+
+  @Post('random')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiTags('testing')
+  async random() {
+    return await this.userService.addRandomUser();
+  }
+
+  @Get('switch')
+  @HttpCode(HttpStatus.OK)
+  @ApiTags('testing')
+  async switch(
+    @Res({ passthrough: true }) response: Response,
+    @Query('id') id?: string,
+  ) {
+    if (id) {
+      const user = await this.userRepository.getUserById(id);
+
+      if (user) {
+        response.setHeader(
+          'Set-Cookie',
+          `Authentication=${await this.authenticationService.generateLoginToken(
+            user.id,
+          )}; Path=/`,
+        );
+      } else {
+        throw new NotFoundException(`User with id ${id} not found`);
+      }
+    } else {
+      throw new BadRequestException("'id' query parameter is required");
+    }
+  }
 
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -72,5 +110,60 @@ export class UserController {
     } else {
       throw new UnauthorizedException('Wrong two factor authentication code');
     }
+  }
+
+  @Get('profile')
+  @HttpCode(HttpStatus.OK)
+  @ApiQuery({ name: 'id', required: false })
+  async getProfile(@GetUserId() userId: string, @Query('id') id?: string) {
+    const profile = await this.userRepository.getProfile(id ?? userId);
+
+    if (profile) {
+      return profile;
+    } else {
+      throw new NotFoundException(`Profile with id ${id ?? userId} not found`);
+    }
+  }
+
+  @Get('preferences')
+  @HttpCode(HttpStatus.OK)
+  async getPreferences(@GetUserId() userId: string) {
+    return await this.userRepository.getPreferences(userId);
+  }
+
+  @Post('profile')
+  @HttpCode(HttpStatus.CREATED)
+  async updateProfile(
+    @GetUserId() userId: string,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
+    await this.userService.updateProfile(userId, updateProfileDto);
+  }
+
+  @Get('search')
+  @HttpCode(HttpStatus.OK)
+  async search(@Query('query') query: string) {
+    if (query) {
+      return await this.userRepository.getUserWithNameStartingWith(query);
+    } else {
+      throw new BadRequestException("'query' query parameter is required");
+    }
+  }
+
+  @Get('avatar')
+  @HttpCode(HttpStatus.OK)
+  @ApiQuery({ name: 'id', required: false })
+  @Header('Content-Type', 'image/png')
+  @Header('Content-Disposition', 'attachment; filename=avatar.png')
+  async getAvatar(@GetUserId() userId: string, @Query('id') id?: string) {
+    const user = await this.userRepository.getUserById(id ?? userId);
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id ?? userId} not found`);
+    }
+
+    return new StreamableFile(
+      createReadStream(join(process.cwd(), `./upload/${user.id}`)),
+    );
   }
 }

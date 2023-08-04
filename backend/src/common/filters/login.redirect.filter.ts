@@ -3,12 +3,12 @@ import {
   Catch,
   ExceptionFilter,
   HttpException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ConfigurationService } from 'src/configuration/configuration.service';
+import { LoginException } from '../exceptions';
 
-@Catch(UnauthorizedException)
+@Catch(LoginException)
 export class LoginRedirectFilter implements ExceptionFilter {
   constructor(private configurationService: ConfigurationService) {}
 
@@ -17,12 +17,8 @@ export class LoginRedirectFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const status = exception.getStatus();
 
-    if (exception.message === 'jwt') {
-      response
-        .status(status)
-        .redirect(this.configurationService.get('FRONTEND_URL') + '/login');
-    } else {
-      response.status(status).json(exception.getResponse());
-    }
+    response
+      .status(status)
+      .redirect(this.configurationService.get('FRONTEND_URL') + '/login');
   }
 }

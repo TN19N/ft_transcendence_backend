@@ -28,7 +28,7 @@ export class UserRepository {
     });
   }
 
-  createNewUser(name: string, intra42Id: number): Promise<User> {
+  createUser(name: string, intra42Id: number): Promise<User> {
     return this.databaseService.user.create({
       data: {
         intra42Id: intra42Id,
@@ -100,6 +100,18 @@ export class UserRepository {
         id: id,
       },
       data: sensitiveData,
+    });
+  }
+
+  getUserWithNameStartingWith(query: string): Promise<User[]> {
+    return this.databaseService.user.findMany({
+      where: {
+        profile: {
+          name: {
+            startsWith: query,
+          },
+        },
+      },
     });
   }
 }

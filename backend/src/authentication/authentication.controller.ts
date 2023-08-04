@@ -7,7 +7,6 @@ import {
   Post,
   Res,
   UnauthorizedException,
-  UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
@@ -16,12 +15,10 @@ import { Intra42Guard, Jwt2faGuard, JwtGuard } from './guard';
 import { GetUserId } from './decorator';
 import { Response } from 'express';
 import { ConfigurationService } from 'src/configuration/configuration.service';
-import { LoginRedirectFilter } from 'src/common';
 import { TwofaDto } from 'src/user/dto';
 
 @Controller('auth')
 @ApiTags('auth')
-@UseFilters(LoginRedirectFilter)
 export class AuthenticationController {
   constructor(
     private authenticationService: AuthenticationService,
@@ -45,6 +42,7 @@ export class AuthenticationController {
   @Post('2fa')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(Jwt2faGuard)
+  @ApiCookieAuth('Authentication')
   async validate2fa(
     @GetUserId() userId: string,
     @Body() twofaDto: TwofaDto,

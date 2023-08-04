@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import * as QRcode from 'qrcode';
 import { ConfigurationService } from 'src/configuration/configuration.service';
 import { authenticator } from 'otplib';
+import { UpdateProfileDto } from './dto';
+import { Prisma, User } from '@prisma/client';
+import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
@@ -11,6 +14,22 @@ export class UserService {
     private userRepository: UserRepository,
     private configurationService: ConfigurationService,
   ) {}
+
+  // for testing purposes
+  async addRandomUser(): Promise<User> {
+    const randomId = Math.floor(Math.random() * 1000000);
+    const user = await this.userRepository.createUser(
+      `bot${randomId}`,
+      randomId,
+    );
+
+    const read = fs.createReadStream('./assets/bot.png');
+    const write = fs.createWriteStream(`./upload/${user.id}`);
+
+    read.pipe(write);
+
+    return user;
+  }
 
   async turnOn2fa(userId: string) {
     const sensitiveData = await this.userRepository.getSensitiveData(userId);
@@ -63,6 +82,19 @@ export class UserService {
         twoFactorAuthenticationSecret: null,
         iv: null,
       });
+    }
+  }
+
+  async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
+    try {
+      await this.userRepository.updateProfile(userId, updateProfileDto);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException('name already exists');
+        }
+      }
+      throw error;
     }
   }
 }

@@ -25,7 +25,7 @@ export class AuthenticationService {
 
     if (!user) {
       const username: string = profile.username;
-      user = await this.userRepository.createNewUser(username, intra42Id);
+      user = await this.userRepository.createUser(username, intra42Id);
 
       // Get the 42 profile picture
       const profilePictureUrl: string = profile._json.image.link;
@@ -35,7 +35,9 @@ export class AuthenticationService {
       const profilePicture: Buffer = Buffer.from(response.data, 'binary');
 
       // Save the profile picture in the upload folder
-      fs.mkdirSync('./upload');
+      if (!fs.existsSync('./upload')) {
+        fs.mkdirSync('./upload');
+      }
       await fs.promises.writeFile('./upload/' + user.id, profilePicture);
     }
 
