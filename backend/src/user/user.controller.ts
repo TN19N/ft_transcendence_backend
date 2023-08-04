@@ -16,19 +16,19 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiCookieAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiCookieAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { GetUserId } from 'src/authentication/decorator';
 import { JwtGuard } from 'src/authentication/guard';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { TwofaDto, UpdateProfileDto } from './dto';
 import { AuthenticationService } from 'src/authentication/authentication.service';
-import { Response } from 'express';
 import { createReadStream } from 'fs';
 import { join } from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { User } from '@prisma/client';
+import { Response } from 'express';
 
 @Controller('user')
 @ApiTags('user')
@@ -40,38 +40,6 @@ export class UserController {
     private userRepository: UserRepository,
     private authenticationService: AuthenticationService,
   ) {}
-
-  @Post('random')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiTags('testing')
-  async random() {
-    return await this.userService.addRandomUser();
-  }
-
-  @Get('switch')
-  @HttpCode(HttpStatus.OK)
-  @ApiTags('testing')
-  async switch(
-    @Res({ passthrough: true }) response: Response,
-    @Query('id') id?: string,
-  ) {
-    if (id) {
-      const user = await this.userRepository.getUserById(id);
-
-      if (user) {
-        response.setHeader(
-          'Set-Cookie',
-          `Authentication=${await this.authenticationService.generateLoginToken(
-            user.id,
-          )}; Path=/`,
-        );
-      } else {
-        throw new NotFoundException(`User with id ${id} not found`);
-      }
-    } else {
-      throw new BadRequestException("'id' query parameter is required");
-    }
-  }
 
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -158,6 +126,7 @@ export class UserController {
   @ApiQuery({ name: 'id', required: false })
   @Header('Content-Type', 'image/png')
   @Header('Content-Disposition', 'attachment; filename=avatar.png')
+  @ApiConsumes('multipart/form-data')
   async getAvatar(@GetUserId() userId: string, @Query('id') id?: string) {
     const user = await this.userRepository.getUserById(id ?? userId);
 
@@ -192,6 +161,48 @@ export class UserController {
   async uploadAvatar(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('Avatar file is required in png format');
+    }
+  }
+}
+
+@Controller('test')
+@ApiTags('testing')
+@ApiCookieAuth('Authentication')
+export class TestController {
+  constructor(
+    private userService: UserService,
+    private userRepository: UserRepository,
+    private authenticationService: AuthenticationService,
+  ) {}
+
+  @Post('addRandomUser')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiTags('testing')
+  async random() {
+    return await this.userService.addRandomUser();
+  }
+
+  @Get('switchToUser')
+  @HttpCode(HttpStatus.OK)
+  async switch(
+    @Res({ passthrough: true }) response: Response,
+    @Query('id') id?: string,
+  ) {
+    if (id) {
+      const user = await this.userRepository.getUserById(id);
+
+      if (user) {
+        response.setHeader(
+          'Set-Cookie',
+          `Authentication=${await this.authenticationService.generateLoginToken(
+            user.id,
+          )}; Path=/`,
+        );
+      } else {
+        throw new NotFoundException(`User with id ${id} not found`);
+      }
+    } else {
+      throw new BadRequestException("'id' query parameter is required");
     }
   }
 }
