@@ -12,7 +12,9 @@ import {
   Res,
   StreamableFile,
   UnauthorizedException,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { GetUserId } from 'src/authentication/decorator';
@@ -24,6 +26,9 @@ import { AuthenticationService } from 'src/authentication/authentication.service
 import { Response } from 'express';
 import { createReadStream } from 'fs';
 import { join } from 'path';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { User } from '@prisma/client';
 
 @Controller('user')
 @ApiTags('user')
@@ -163,5 +168,30 @@ export class UserController {
     return new StreamableFile(
       createReadStream(join(process.cwd(), `./upload/${user.id}`)),
     );
+  }
+
+  @Post('avatar')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      fileFilter: (req, file, callback) => {
+        if (file.mimetype === 'image/png') {
+          callback(null, true);
+        } else {
+          callback(null, false);
+        }
+      },
+      storage: diskStorage({
+        destination: './upload',
+        filename: (req, file, callback) => {
+          callback(null, (req.user as User).id);
+        },
+      }),
+    }),
+  )
+  @HttpCode(HttpStatus.CREATED)
+  async uploadAvatar(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Avatar file is required in png format');
+    }
   }
 }
