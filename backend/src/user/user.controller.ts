@@ -3,9 +3,7 @@ import {
   Body,
   Controller,
   Get,
-  Head,
   Header,
-  Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -24,7 +22,7 @@ import { UserRepository } from './user.repository';
 import { TwofaDto, UpdateProfileDto } from './dto';
 import { AuthenticationService } from 'src/authentication/authentication.service';
 import { Response } from 'express';
-import { createReadStream, existsSync } from 'fs';
+import { createReadStream } from 'fs';
 import { join } from 'path';
 
 @Controller('user')
