@@ -21,6 +21,9 @@ model User {
 
   sentFriendRequests      FriendRequest[] @relation("SenderToFriendRequest")
   receivedFriendRequests  FriendRequest[] @relation("ReceiverToFriendRequest")
+
+  bannedUsers             Ban[]           @relation("UserToBan")
+  bannedBy                Ban[]           @relation("BanToUser")
 }
 
 enum Status {
@@ -70,13 +73,25 @@ model Friendship {
 }
 
 model FriendRequest {
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
 
-  sender    User     @relation(name: "SenderToFriendRequest", fields: [senderId], references: [id], onDelete: Cascade)
-  senderId  String
+  sender      User     @relation(name: "SenderToFriendRequest", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId    String
 
-  receiver  User     @relation(name: "ReceiverToFriendRequest", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiver    User     @relation(name: "ReceiverToFriendRequest", fields: [receiverId], references: [id], onDelete: Cascade)
   receiverId  String
 
   @@id([senderId, receiverId], name: "FriendRequestId")
+}
+
+model Ban {
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(name: "UserToBan", fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+
+  bannedUser    User      @relation(name: "BanToUser", fields: [bannedUserId], references: [id], onDelete: Cascade)
+  bannedUserId  String
+
+  @@id([userId, bannedUserId], name: "BanId")
 }

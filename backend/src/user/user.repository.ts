@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  Ban,
   FriendRequest,
   Friendship,
   Preferences,
@@ -13,6 +14,80 @@ import { DatabaseService } from 'src/database/database.service';
 @Injectable()
 export class UserRepository {
   constructor(private readonly databaseService: DatabaseService) {}
+
+  getBanedUsers(userId: string): Promise<Ban[]> {
+    return this.databaseService.user
+      .findUnique({
+        where: { id: userId },
+        select: {
+          bannedUsers: true,
+        },
+      })
+      .bannedUsers();
+  }
+
+  async deleteBan(userId: string, userToUnBanId: string) {
+    await this.databaseService.ban.delete({
+      where: {
+        BanId: {
+          userId: userId,
+          bannedUserId: userToUnBanId,
+        },
+      },
+    });
+  }
+
+  async createBan(userId: string, userToBanId: string) {
+    await this.databaseService.$transaction(async (prisma) => {
+      await prisma.ban.create({
+        data: {
+          user: { connect: { id: userId } },
+          bannedUser: { connect: { id: userToBanId } },
+        },
+      });
+
+      await prisma.friendship.deleteMany({
+        where: {
+          OR: [
+            {
+              userId: userId,
+              friendId: userToBanId,
+            },
+            {
+              userId: userToBanId,
+              friendId: userId,
+            },
+          ],
+        },
+      });
+
+      await prisma.friendRequest.deleteMany({
+        where: {
+          OR: [
+            {
+              senderId: userId,
+              receiverId: userToBanId,
+            },
+            {
+              senderId: userToBanId,
+              receiverId: userId,
+            },
+          ],
+        },
+      });
+    });
+  }
+
+  async getBan(userId: string, userToBanId: string): Promise<Ban | null> {
+    return this.databaseService.ban.findUnique({
+      where: {
+        BanId: {
+          userId: userId,
+          bannedUserId: userToBanId,
+        },
+      },
+    });
+  }
 
   async createFriendship(userId: string, friendId: string) {
     await this.databaseService.$transaction(async (prisma) => {
@@ -213,9 +288,19 @@ export class UserRepository {
     });
   }
 
-  getUserWithNameStartingWith(query: string): Promise<User[]> {
+  getUserWithNameStartingWith(userId, query: string): Promise<User[]> {
     return this.databaseService.user.findMany({
       where: {
+        bannedUsers: {
+          none: {
+            bannedUserId: userId,
+          },
+        },
+        bannedBy: {
+          none: {
+            userId: userId,
+          },
+        },
         profile: {
           name: {
             startsWith: query,
