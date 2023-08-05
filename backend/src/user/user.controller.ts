@@ -41,6 +41,32 @@ export class UserController {
     private authenticationService: AuthenticationService,
   ) {}
 
+  @Post('ban')
+  @HttpCode(HttpStatus.CREATED)
+  async banUser(@GetUserId() userId: string, @Query('id') id?: string) {
+    if (id) {
+      await this.userService.banUser(userId, id);
+    } else {
+      throw new BadRequestException("'id' query parameter is required");
+    }
+  }
+
+  @Post('unBan')
+  @HttpCode(HttpStatus.CREATED)
+  async unBanUser(@GetUserId() userId: string, @Query('id') id?: string) {
+    if (id) {
+      await this.userService.unBanUser(userId, id);
+    } else {
+      throw new BadRequestException("'id' query parameter is required");
+    }
+  }
+
+  @Get('baned')
+  @HttpCode(HttpStatus.OK)
+  async getBanedUsers(@GetUserId() userId: string) {
+    return await this.userRepository.getBanedUsers(userId);
+  }
+
   @Post('acceptFriendRequest')
   @HttpCode(HttpStatus.CREATED)
   async acceptFriendRequest(
@@ -151,9 +177,12 @@ export class UserController {
 
   @Get('search')
   @HttpCode(HttpStatus.OK)
-  async search(@Query('query') query: string) {
+  async search(@GetUserId() userId: string, @Query('query') query: string) {
     if (query) {
-      return await this.userRepository.getUserWithNameStartingWith(query);
+      return await this.userRepository.getUserWithNameStartingWith(
+        userId,
+        query,
+      );
     } else {
       throw new BadRequestException("'query' query parameter is required");
     }

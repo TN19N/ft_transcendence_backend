@@ -21,6 +21,44 @@ export class UserService {
     private userGateway: UserGateway,
   ) {}
 
+  async unBanUser(userId: string, userToUnBanId: string) {
+    if (!(await this.userRepository.getUserById(userId))) {
+      throw new NotFoundException(`user with id ${userId} not found`);
+    }
+
+    if (!(await this.userRepository.getBan(userId, userToUnBanId))) {
+      throw new ConflictException(
+        `user with id ${userToUnBanId} is not banned`,
+      );
+    }
+
+    await this.userRepository.deleteBan(userId, userToUnBanId);
+  }
+
+  async banUser(userId: string, userToBanId: string) {
+    if (userId === userToBanId) {
+      throw new ConflictException('You cannot ban yourself! hhh are you ok?');
+    }
+
+    if (!(await this.userRepository.getUserById(userToBanId))) {
+      throw new NotFoundException(
+        `user to ban with id ${userToBanId} not found`,
+      );
+    }
+
+    try {
+      await this.userRepository.createBan(userId, userToBanId);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException('The ban already exists');
+        }
+      }
+
+      throw error;
+    }
+  }
+
   async acceptFriendRequest(userId: string, senderId: string) {
     const friendRequest = await this.userRepository.getFriendRequest(
       senderId,
@@ -47,6 +85,14 @@ export class UserService {
 
     if (await this.userRepository.getFriendship(userId, friendId)) {
       throw new ConflictException('The friendship already exists');
+    }
+
+    if (await this.userRepository.getBan(userId, friendId)) {
+      throw new ConflictException('You are banned this user');
+    }
+
+    if (await this.userRepository.getBan(friendId, userId)) {
+      throw new ConflictException('This user is banned you');
     }
 
     try {
