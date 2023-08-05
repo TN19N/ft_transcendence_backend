@@ -15,6 +15,14 @@ model User {
   profile       Profile?
   preferences   Preferences?
   sensitiveData SensitiveData?
+
+  friends       Friendship[] @relation("UserToFriendship")
+  friendOf      Friendship[] @relation("FriendshipToUser")
+}
+
+enum Status {
+  ONLINE
+  OFFLINE
 }
 
 model Profile {
@@ -22,6 +30,7 @@ model Profile {
   updatedAt DateTime  @updatedAt
 
   name      String    @unique
+  status    Status    @default(OFFLINE)
 
   user      User      @relation(fields: [id], references: [id], onDelete: Cascade)
 }
@@ -43,4 +52,16 @@ model SensitiveData {
   iv                            String?
 
   user                          User      @relation(fields: [id], references: [id], onDelete: Cascade)
+}
+
+model Friendship {
+  createdAt DateTime @default(now())
+
+  user      User     @relation(name: "UserToFriendship", fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  friend    User     @relation(name: "FriendshipToUser", fields: [friendId], references: [id], onDelete: Cascade)
+  friendId  String
+
+  @@id([userId, friendId], name: "FriendshipId")
 }

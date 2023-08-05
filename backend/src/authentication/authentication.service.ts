@@ -44,8 +44,16 @@ export class AuthenticationService {
     return user;
   }
 
-  async validateJwt(payload: JwtPayload): Promise<User | null> {
+  async validatePayload(payload: JwtPayload): Promise<User | null> {
     return await this.userRepository.getUserById(payload.sub);
+  }
+
+  async validateJwt(jwtToken: string): Promise<JwtPayload | null> {
+    try {
+      return await this.jwtService.verifyAsync(jwtToken);
+    } catch (_) {
+      return null;
+    }
   }
 
   async validate2fa(userId: string, twofaCode: string): Promise<boolean> {

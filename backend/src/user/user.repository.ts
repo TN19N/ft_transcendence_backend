@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  Friendship,
   Preferences,
   Prisma,
   Profile,
@@ -11,6 +12,19 @@ import { DatabaseService } from 'src/database/database.service';
 @Injectable()
 export class UserRepository {
   constructor(private readonly databaseService: DatabaseService) {}
+
+  getFriends(userId: string): Promise<Friendship[]> {
+    return this.databaseService.user
+      .findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          friends: true,
+        },
+      })
+      .friends();
+  }
 
   getUserByIntra42Id(intra42Id: number): Promise<User | null> {
     return this.databaseService.user.findUnique({

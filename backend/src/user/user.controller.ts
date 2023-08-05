@@ -163,6 +163,12 @@ export class UserController {
       throw new BadRequestException('Avatar file is required in png format');
     }
   }
+
+  @Get('friends')
+  @HttpCode(HttpStatus.OK)
+  async getFriends(@GetUserId() userId: string) {
+    return await this.userRepository.getFriends(userId);
+  }
 }
 
 @Controller('test')
