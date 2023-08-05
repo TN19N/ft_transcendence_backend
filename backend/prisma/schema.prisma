@@ -8,16 +8,19 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  intra42Id     Int       @unique
-  createdAt     DateTime  @default(now())
+  id                      String          @id @default(uuid())
+  intra42Id               Int             @unique
+  createdAt               DateTime        @default(now())
 
-  profile       Profile?
-  preferences   Preferences?
-  sensitiveData SensitiveData?
+  profile                 Profile?
+  preferences             Preferences?
+  sensitiveData           SensitiveData?
 
-  friends       Friendship[] @relation("UserToFriendship")
-  friendOf      Friendship[] @relation("FriendshipToUser")
+  friends                 Friendship[]    @relation("UserToFriendship")
+  friendOf                Friendship[]    @relation("FriendshipToUser")
+
+  sentFriendRequests      FriendRequest[] @relation("SenderToFriendRequest")
+  receivedFriendRequests  FriendRequest[] @relation("ReceiverToFriendRequest")
 }
 
 enum Status {
@@ -64,4 +67,16 @@ model Friendship {
   friendId  String
 
   @@id([userId, friendId], name: "FriendshipId")
+}
+
+model FriendRequest {
+  createdAt DateTime @default(now())
+
+  sender    User     @relation(name: "SenderToFriendRequest", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId  String
+
+  receiver  User     @relation(name: "ReceiverToFriendRequest", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverId  String
+
+  @@id([senderId, receiverId], name: "FriendRequestId")
 }

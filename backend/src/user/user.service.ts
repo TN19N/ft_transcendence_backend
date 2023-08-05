@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import * as QRcode from 'qrcode';
@@ -7,13 +11,57 @@ import { authenticator } from 'otplib';
 import { UpdateProfileDto } from './dto';
 import { Prisma, User } from '@prisma/client';
 import * as fs from 'fs';
+import { UserGateway } from './user.gateway';
 
 @Injectable()
 export class UserService {
   constructor(
     private userRepository: UserRepository,
     private configurationService: ConfigurationService,
+    private userGateway: UserGateway,
   ) {}
+
+  async acceptFriendRequest(userId: string, senderId: string) {
+    const friendRequest = await this.userRepository.getFriendRequest(
+      senderId,
+      userId,
+    );
+
+    if (friendRequest) {
+      await this.userRepository.createFriendship(userId, senderId);
+    } else {
+      throw new NotFoundException(`friendRequest from '${senderId}' not found`);
+    }
+  }
+
+  async sendFriendRequest(userId: string, friendId: string) {
+    if (userId === friendId) {
+      throw new ConflictException(
+        'You cannot send a friend request to yourself',
+      );
+    }
+
+    if (!(await this.userRepository.getUserById(friendId))) {
+      throw new NotFoundException(`friend with id ${friendId} not found`);
+    }
+
+    if (await this.userRepository.getFriendship(userId, friendId)) {
+      throw new ConflictException('The friendship already exists');
+    }
+
+    try {
+      await this.userRepository.createFriendRequest(userId, friendId);
+      this.userGateway.sendFriendRequest(userId, friendId);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException('The friendRequest already exists');
+        }
+      }
+
+      throw error;
+    }
+  }
 
   // for testing purposes
   async addRandomUser(): Promise<User> {

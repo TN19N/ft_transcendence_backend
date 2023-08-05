@@ -52,10 +52,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
         status: Status.ONLINE,
       });
     }
-
-    for (const [key, value] of this.connectedUsers.entries()) {
-      console.log(key, value.length);
-    }
   }
 
   async handleDisconnect(socket: Socket) {
@@ -66,6 +62,20 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
           value.filter((item) => item !== socket),
         );
       }
+    }
+  }
+
+  sendFriendRequest(userId: string, friendId: string) {
+    if (this.connectedUsers.has(friendId)) {
+      this.connectedUsers.get(friendId).forEach((socket) => {
+        socket.emit('notification', {
+          type: 'friendRequest',
+          payload: {
+            senderId: userId,
+            receiverId: friendId,
+          },
+        });
+      });
     }
   }
 

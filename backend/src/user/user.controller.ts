@@ -41,6 +41,44 @@ export class UserController {
     private authenticationService: AuthenticationService,
   ) {}
 
+  @Post('acceptFriendRequest')
+  @HttpCode(HttpStatus.CREATED)
+  async acceptFriendRequest(
+    @GetUserId() userId: string,
+    @Query('id') senderId?: string,
+  ) {
+    if (senderId) {
+      await this.userService.acceptFriendRequest(userId, senderId);
+    } else {
+      throw new BadRequestException("'id' query parameter is required");
+    }
+  }
+
+  @Post('friendRequest')
+  @HttpCode(HttpStatus.CREATED)
+  async sendFriendRequest(
+    @GetUserId() userId: string,
+    @Query('id') friendId?: string,
+  ) {
+    if (friendId) {
+      await this.userService.sendFriendRequest(userId, friendId);
+    } else {
+      throw new BadRequestException("'id' query parameter is required");
+    }
+  }
+
+  @Get('friendRequest/sent')
+  @HttpCode(HttpStatus.OK)
+  async getSentFriendRequests(@GetUserId() userId: string) {
+    return await this.userRepository.getSentFriendRequests(userId);
+  }
+
+  @Get('friendRequest/received')
+  @HttpCode(HttpStatus.OK)
+  async getReceivedFriendRequests(@GetUserId() userId: string) {
+    return await this.userRepository.getReceivedFriendRequests(userId);
+  }
+
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiQuery({ name: 'id', required: false })
