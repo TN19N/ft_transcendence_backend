@@ -5,6 +5,7 @@ import { UserRepository } from './user.repository';
 import { TestController, UserController } from './user.controller';
 import { ConfigurationModule } from 'src/configuration/configuration.module';
 import { AuthenticationModule } from 'src/authentication/authentication.module';
+import { UserGateway } from './user.gateway';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { AuthenticationModule } from 'src/authentication/authentication.module';
     forwardRef(() => AuthenticationModule),
   ],
   controllers: [UserController, TestController],
-  providers: [UserService, UserRepository],
+  providers: [UserService, UserRepository, UserGateway],
   exports: [UserRepository],
 })
 export class UserModule {}

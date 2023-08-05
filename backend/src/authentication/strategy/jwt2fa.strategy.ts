@@ -24,7 +24,7 @@ export class Jwt2faStrategy extends PassportStrategy(Strategy, 'jwt2fa') {
 
   async validate(payload: JwtPayload) {
     if (payload.tfa == true) {
-      return await this.authenticationService.validateJwt(payload);
+      return await this.authenticationService.validatePayload(payload);
     } else {
       return null;
     }
