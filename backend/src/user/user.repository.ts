@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  FriendRequest,
   Friendship,
   Preferences,
   Prisma,
@@ -12,6 +13,101 @@ import { DatabaseService } from 'src/database/database.service';
 @Injectable()
 export class UserRepository {
   constructor(private readonly databaseService: DatabaseService) {}
+
+  async createFriendship(userId: string, friendId: string) {
+    await this.databaseService.$transaction(async (prisma) => {
+      await prisma.friendship.createMany({
+        data: [
+          {
+            userId: userId,
+            friendId: friendId,
+          },
+          {
+            userId: friendId,
+            friendId: userId,
+          },
+        ],
+      });
+
+      await prisma.friendRequest.deleteMany({
+        where: {
+          OR: [
+            {
+              senderId: userId,
+              receiverId: friendId,
+            },
+            {
+              senderId: friendId,
+              receiverId: userId,
+            },
+          ],
+        },
+      });
+    });
+  }
+
+  getFriendRequest(
+    senderId: string,
+    receiverId: string,
+  ): Promise<FriendRequest | null> {
+    return this.databaseService.friendRequest.findUnique({
+      where: {
+        FriendRequestId: {
+          senderId: senderId,
+          receiverId: receiverId,
+        },
+      },
+    });
+  }
+
+  createFriendRequest(
+    userId: string,
+    friendId: string,
+  ): Promise<FriendRequest> {
+    return this.databaseService.friendRequest.create({
+      data: {
+        sender: { connect: { id: userId } },
+        receiver: { connect: { id: friendId } },
+      },
+    });
+  }
+
+  getFriendship(userId: string, friendId: string): Promise<Friendship | null> {
+    return this.databaseService.friendship.findUnique({
+      where: {
+        FriendshipId: {
+          userId: userId,
+          friendId: friendId,
+        },
+      },
+    });
+  }
+
+  getSentFriendRequests(userId: string): Promise<FriendRequest[]> {
+    return this.databaseService.user
+      .findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          sentFriendRequests: true,
+        },
+      })
+      .sentFriendRequests();
+  }
+
+  getReceivedFriendRequests(userId: string): Promise<FriendRequest[]> {
+    return this.databaseService.user
+      .findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          receivedFriendRequests: true,
+        },
+      })
+      .receivedFriendRequests();
+  }
 
   getFriends(userId: string): Promise<Friendship[]> {
     return this.databaseService.user
