@@ -86,13 +86,16 @@ export class AuthenticationService {
   async generateLoginToken(
     userId: string,
     is2faEnabled: boolean | undefined = undefined,
-  ): Promise<string> {
+  ): Promise<{ token: string; twofa: boolean }> {
     if (is2faEnabled === undefined) {
       const preferences = await this.userRepository.getPreferences(userId);
       is2faEnabled = preferences.isTwoFactorAuthenticationEnabled;
     }
 
     const payload: JwtPayload = { sub: userId, tfa: is2faEnabled };
-    return await this.jwtService.signAsync(payload);
+    return {
+      token: await this.jwtService.signAsync(payload),
+      twofa: is2faEnabled,
+    };
   }
 }
