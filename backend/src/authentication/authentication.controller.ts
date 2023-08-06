@@ -32,11 +32,17 @@ export class AuthenticationController {
     @GetUserId() userId: string,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const loginToken = await this.authenticationService.generateLoginToken(
-      userId,
-    );
-    response.setHeader('Set-Cookie', `Authentication=${loginToken}; Path=/`);
-    response.redirect(this.configurationService.get('FRONTEND_URL') + '/home');
+    const { token, twofa } =
+      await this.authenticationService.generateLoginToken(userId);
+    response.setHeader('Set-Cookie', `Authentication=${token}; Path=/`);
+
+    if (twofa) {
+      response.redirect(this.configurationService.get('FRONTEND_URL') + '/2fa');
+    } else {
+      response.redirect(
+        this.configurationService.get('FRONTEND_URL') + '/home',
+      );
+    }
   }
 
   @Post('2fa')
@@ -73,5 +79,6 @@ export class AuthenticationController {
   @ApiCookieAuth('Authentication')
   async logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('Authentication');
+    response.redirect(this.configurationService.get('FRONTEND_URL') + '/login');
   }
 }

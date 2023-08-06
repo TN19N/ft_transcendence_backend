@@ -1,29 +1,23 @@
 import { UnauthorizedException } from '@nestjs/common';
-import {
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthenticationService } from 'src/authentication/authentication.service';
 import { JwtPayload } from 'src/authentication/interface';
-import { UserRepository } from './user.repository';
-import { Status } from '@prisma/client';
+import { UserRepository } from 'src/user/user.repository';
 
 @WebSocketGateway({
-  namespace: 'user',
+  namespace: 'chat',
 })
-export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway {
+  constructor(
+    private userRepository: UserRepository,
+    private authenticationService: AuthenticationService,
+  ) {}
+
   @WebSocketServer()
   server: Server;
 
   private connectedUsers: Map<string, Socket[]> = new Map();
-
-  constructor(
-    private authenticationService: AuthenticationService,
-    private userRepository: UserRepository,
-  ) {}
 
   async handleConnection(socket: Socket) {
     const userId = await this.validateJwtWbSocket(socket);
@@ -35,9 +29,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket.on('disconnect', async () => {
       if (this.connectedUsers.get(userId).length === 0) {
         this.connectedUsers.delete(userId);
-        await this.userRepository.updateProfile(userId, {
-          status: Status.OFFLINE,
-        });
       }
     });
 
@@ -48,9 +39,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
       ]);
     } else {
       this.connectedUsers.set(userId, [socket]);
-      await this.userRepository.updateProfile(userId, {
-        status: Status.ONLINE,
-      });
     }
   }
 
@@ -65,14 +53,12 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  sendFriendRequest(userId: string, friendId: string) {
-    if (this.connectedUsers.has(friendId)) {
-      this.connectedUsers.get(friendId).forEach((socket) => {
-        socket.emit('notification', {
-          type: 'friendRequest',
-          payload: {
-            senderId: userId,
-          },
+  sendDmMessage(senderId: string, receiverId: string, message: string) {
+    if (this.connectedUsers.has(receiverId)) {
+      this.connectedUsers.get(receiverId).forEach((socket) => {
+        socket.emit('message', {
+          senderId: senderId,
+          message: message,
         });
       });
     }

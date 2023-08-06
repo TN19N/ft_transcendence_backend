@@ -88,11 +88,11 @@ export class UserService {
     }
 
     if (await this.userRepository.getBan(userId, friendId)) {
-      throw new ConflictException('You are banned this user');
+      throw new ConflictException('You banned the user');
     }
 
     if (await this.userRepository.getBan(friendId, userId)) {
-      throw new ConflictException('This user is banned you');
+      throw new ConflictException('The user banned you');
     }
 
     try {

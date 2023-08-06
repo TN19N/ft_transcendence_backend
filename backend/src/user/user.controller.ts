@@ -267,9 +267,9 @@ export class TestController {
       if (user) {
         response.setHeader(
           'Set-Cookie',
-          `Authentication=${await this.authenticationService.generateLoginToken(
-            user.id,
-          )}; Path=/`,
+          `Authentication=${
+            (await this.authenticationService.generateLoginToken(user.id)).token
+          }; Path=/`,
         );
       } else {
         throw new NotFoundException(`User with id ${id} not found`);

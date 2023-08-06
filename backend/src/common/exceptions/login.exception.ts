@@ -2,6 +2,6 @@ import { HttpException } from '@nestjs/common';
 
 export class LoginException extends HttpException {
   constructor() {
-    super('Login failed', 401);
+    super('Unauthorized', 401);
   }
 }
