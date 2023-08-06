@@ -4,7 +4,6 @@ import { ConfigurationService } from './configuration/configuration.service';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
-import { LoginRedirectFilter } from './common/filters';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,9 +24,6 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
-
-  // Filters
-  app.useGlobalFilters(new LoginRedirectFilter(configurationService));
 
   // cookieParser
   app.use(cookieParser());
