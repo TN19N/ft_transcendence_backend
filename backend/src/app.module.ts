@@ -4,6 +4,7 @@ import { AuthenticationModule } from './authentication/authentication.module';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ChatModule } from './chat/chat.module';
     DatabaseModule,
     UserModule,
     ChatModule,
+    GameModule,
   ],
 })
 export class AppModule {}

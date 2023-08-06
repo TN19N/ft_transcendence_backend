@@ -27,6 +27,9 @@ model User {
 
   sentMessages            MessageDm[]     @relation("SenderToMessageDm")
   receivedMessages        MessageDm[]     @relation("ReceiverToMessageDm")
+
+  gameRecords             GameRecord[]    @relation("UserToGameRecord")
+  ogameRecords            GameRecord[]    @relation("OpponentToGameRecord")
 }
 
 enum Status {
@@ -110,4 +113,18 @@ model MessageDm {
   receiverId  String
 
   message     String
+}
+
+model GameRecord {
+  id            String    @id @default(uuid())
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(name: "UserToGameRecord", fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+
+  opponent      User      @relation(name: "OpponentToGameRecord", fields: [opponentId], references: [id], onDelete: Cascade)
+  opponentId    String
+
+  userScore     Int
+  opponentScore Int
 }
