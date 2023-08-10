@@ -22,6 +22,7 @@ CREATE TABLE "Profile" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
     "status" "Status" NOT NULL DEFAULT 'OFFLINE',
+    "avatarType" TEXT NOT NULL DEFAULT 'image/jpeg',
 
     CONSTRAINT "Profile_pkey" PRIMARY KEY ("id")
 );
