@@ -30,21 +30,32 @@ model User {
 
   gameRecords             GameRecord[]    @relation("UserToGameRecord")
   ogameRecords            GameRecord[]    @relation("OpponentToGameRecord")
+
+  joinedGroups            UserGroup[]
+
+  ownedGroups             Group[]         @relation("OwnerToGroup")
+  bannedGroups            Group[]         @relation("BannedUserToGroup")
+
+  sentGroupMessages       MessageGroup[]
+
+  receivedGroupRequests   GroupInvite[]
 }
 
 enum Status {
   ONLINE
+  PLAYING
   OFFLINE
 }
 
 model Profile {
-  id        String    @id
-  updatedAt DateTime  @updatedAt
+  id        String      @id
+  updatedAt DateTime    @updatedAt
 
-  name      String    @unique
-  status    Status    @default(OFFLINE)
+  name       String     @unique
+  status     Status     @default(OFFLINE)
+  avatarType String     @default("image/jpeg")
 
-  user      User      @relation(fields: [id], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [id], references: [id], onDelete: Cascade)
 }
 
 model Preferences {
@@ -127,4 +138,81 @@ model GameRecord {
 
   userScore     Int
   opponentScore Int
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  MEMBER_MUTED
+}
+
+model UserGroup {
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  group     Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+
+  role      Role
+
+  @@id([userId, groupId], name: "UserGroupId")
+}
+
+enum GroupType {
+  PRIVATE
+  PUBLIC
+  PROTECTED
+}
+
+model Group {
+  id            String                @id @default(uuid())
+  creatAt       DateTime              @default(now())
+
+  name          String                @unique
+  type          GroupType
+  sensitiveData GroupSensitiveData?
+  
+  owner         User                  @relation(name: "OwnerToGroup", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId       String
+
+  members       UserGroup[]
+  bannedUsers   User[]                @relation("BannedUserToGroup")
+
+  messages      MessageGroup[]
+  requests      GroupInvite[]
+}
+
+model MessageGroup {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+
+  sender      User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId    String
+
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId     String
+
+  message     String
+}
+
+model GroupSensitiveData {
+  id        String    @id
+  creatAt   DateTime  @default(now())
+
+  password  String?
+
+  group     Group     @relation(fields: [id], references: [id], onDelete: Cascade)
+}
+
+model GroupInvite {
+  createdAt   DateTime @default(now())
+
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId     String
+
+  receiver    User     @relation(fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverId  String
+
+  @@id([groupId, receiverId], name: "GroupInviteId")
 }

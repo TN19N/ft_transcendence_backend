@@ -1,12 +1,12 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
   Post,
   Res,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
@@ -17,8 +17,8 @@ import { Response } from 'express';
 import { ConfigurationService } from 'src/configuration/configuration.service';
 import { TwofaDto } from 'src/user/dto';
 
-@Controller('auth')
-@ApiTags('auth')
+@Controller('v1/auth')
+@ApiTags('v1/auth')
 export class AuthenticationController {
   constructor(
     private authenticationService: AuthenticationService,
@@ -60,16 +60,12 @@ export class AuthenticationController {
     );
 
     if (isValid) {
-      const loginToken = await this.authenticationService.generateLoginToken(
-        userId,
-        false,
-      );
+      const loginToken = (
+        await this.authenticationService.generateLoginToken(userId, false)
+      ).token;
       response.setHeader('Set-Cookie', `Authentication=${loginToken}; Path=/`);
-      response.redirect(
-        this.configurationService.get('FRONTEND_URL') + '/home',
-      );
     } else {
-      throw new UnauthorizedException('wrong 2fa code');
+      throw new ForbiddenException('wrong 2fa code');
     }
   }
 
@@ -79,6 +75,5 @@ export class AuthenticationController {
   @ApiCookieAuth('Authentication')
   async logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('Authentication');
-    response.redirect(this.configurationService.get('FRONTEND_URL') + '/login');
   }
 }

@@ -13,8 +13,8 @@ import { JwtGuard } from 'src/authentication/guard';
 import { GameRepository } from './game.repository';
 import { UserRepository } from 'src/user/user.repository';
 
-@Controller('game')
-@ApiTags('game')
+@Controller('v1/game')
+@ApiTags('v1/game')
 @UseGuards(JwtGuard)
 @ApiCookieAuth('Authentication')
 export class GameController {

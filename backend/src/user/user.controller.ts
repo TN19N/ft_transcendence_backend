@@ -2,8 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  DefaultValuePipe,
+  ForbiddenException,
   Get,
-  Header,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -11,7 +12,6 @@ import {
   Query,
   Res,
   StreamableFile,
-  UnauthorizedException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -30,8 +30,8 @@ import { diskStorage } from 'multer';
 import { User } from '@prisma/client';
 import { Response } from 'express';
 
-@Controller('user')
-@ApiTags('user')
+@Controller('v1/user')
+@ApiTags('v1/user')
 @UseGuards(JwtGuard)
 @ApiCookieAuth('Authentication')
 export class UserController {
@@ -143,8 +143,14 @@ export class UserController {
         isTwoFactorAuthenticationEnabled: true,
       });
     } else {
-      throw new UnauthorizedException('Wrong two factor authentication code');
+      throw new ForbiddenException('Wrong two factor authentication code');
     }
+  }
+
+  @Get('group/invites')
+  @HttpCode(HttpStatus.OK)
+  async getGroupInvites(@GetUserId() userId: string) {
+    return await this.userRepository.getGroupInvites(userId);
   }
 
   @Get('profile')
@@ -177,29 +183,32 @@ export class UserController {
 
   @Get('search')
   @HttpCode(HttpStatus.OK)
-  async search(@GetUserId() userId: string, @Query('query') query: string) {
-    if (query) {
-      return await this.userRepository.getUserWithNameStartingWith(
-        userId,
-        query,
-      );
-    } else {
-      throw new BadRequestException("'query' query parameter is required");
-    }
+  async search(
+    @GetUserId() userId: string,
+    @Query('query', new DefaultValuePipe('')) query: string,
+  ) {
+    return await this.userRepository.getUserWithNameStartingWith(userId, query);
   }
 
   @Get('avatar')
   @HttpCode(HttpStatus.OK)
   @ApiQuery({ name: 'id', required: false })
-  @Header('Content-Type', 'image/png')
-  @Header('Content-Disposition', 'attachment; filename=avatar.png')
   @ApiConsumes('multipart/form-data')
-  async getAvatar(@GetUserId() userId: string, @Query('id') id?: string) {
+  async getAvatar(
+    @GetUserId() userId: string,
+    @Res({ passthrough: true }) response: Response,
+    @Query('id') id?: string,
+  ) {
     const user = await this.userRepository.getUserById(id ?? userId);
 
     if (!user) {
       throw new NotFoundException(`User with id ${id ?? userId} not found`);
     }
+
+    const { avatarType } = await this.userRepository.getProfile(id ?? userId);
+
+    response.set('Content-Type', avatarType);
+    response.set('Content-Disposition', 'inline');
 
     return new StreamableFile(
       createReadStream(join(process.cwd(), `./upload/${user.id}`)),
@@ -209,8 +218,8 @@ export class UserController {
   @Post('avatar')
   @UseInterceptors(
     FileInterceptor('avatar', {
-      fileFilter: (req, file, callback) => {
-        if (file.mimetype === 'image/png') {
+      fileFilter: (_, file, callback) => {
+        if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') {
           callback(null, true);
         } else {
           callback(null, false);
@@ -218,17 +227,22 @@ export class UserController {
       },
       storage: diskStorage({
         destination: './upload',
-        filename: (req, file, callback) => {
+        filename: (req, _, callback) => {
           callback(null, (req.user as User).id);
         },
       }),
     }),
   )
   @HttpCode(HttpStatus.CREATED)
-  async uploadAvatar(@UploadedFile() file: Express.Multer.File) {
+  async uploadAvatar(
+    @GetUserId() userId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     if (!file) {
       throw new BadRequestException('Avatar file is required in png format');
     }
+
+    await this.userRepository.updateAvatarType(userId, file.mimetype);
   }
 
   @Get('friends')
@@ -238,9 +252,10 @@ export class UserController {
   }
 }
 
-@Controller('test')
-@ApiTags('testing')
+@Controller('v1/test')
+@ApiTags('v1/testing')
 @ApiCookieAuth('Authentication')
+@UseGuards(JwtGuard)
 export class TestController {
   constructor(
     private userService: UserService,
@@ -250,7 +265,6 @@ export class TestController {
 
   @Post('addRandomUser')
   @HttpCode(HttpStatus.CREATED)
-  @ApiTags('testing')
   async random() {
     return await this.userService.addRandomUser();
   }

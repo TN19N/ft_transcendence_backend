@@ -1,9 +1,15 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { UserGroup } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { AuthenticationService } from 'src/authentication/authentication.service';
 import { JwtPayload } from 'src/authentication/interface';
 import { UserRepository } from 'src/user/user.repository';
+
+enum MessageType {
+  DM = 'dm',
+  GROUP = 'group',
+}
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -57,10 +63,35 @@ export class ChatGateway {
     if (this.connectedUsers.has(receiverId)) {
       this.connectedUsers.get(receiverId).forEach((socket) => {
         socket.emit('message', {
-          senderId: senderId,
-          message: message,
+          type: MessageType.DM,
+          payload: {
+            senderId: senderId,
+            message: message,
+          },
         });
       });
+    }
+  }
+
+  sendGroupMessage(
+    members: UserGroup[],
+    groupId: string,
+    senderId: string,
+    message: string,
+  ) {
+    for (const member of members) {
+      if (this.connectedUsers.has(member.userId)) {
+        this.connectedUsers.get(member.userId).forEach((socket) => {
+          socket.emit('message', {
+            type: MessageType.GROUP,
+            payload: {
+              groupId: groupId,
+              senderId: senderId,
+              message: message,
+            },
+          });
+        });
+      }
     }
   }
 
