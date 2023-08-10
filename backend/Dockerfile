@@ -52,6 +52,8 @@ COPY --chown=node:node --from=build /usr/src/app/dist          ./dist
 
 RUN npm prune --production
 
+RUN chown -R node:node .
+
 USER node
 
 CMD npx prisma migrate deploy && node dist/main.js

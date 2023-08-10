@@ -11,6 +11,11 @@ import { JwtPayload } from 'src/authentication/interface';
 import { UserRepository } from './user.repository';
 import { Status } from '@prisma/client';
 
+enum NotificationType {
+  FRIEND_REQUEST = 'FRIEND_REQUEST',
+  GROUP_INVITE = 'GROUP_INVITE',
+}
+
 @WebSocketGateway({
   namespace: 'user',
 })
@@ -65,13 +70,26 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  sendFriendRequest(userId: string, friendId: string) {
-    if (this.connectedUsers.has(friendId)) {
-      this.connectedUsers.get(friendId).forEach((socket) => {
+  sendGroupInvite(receiverId: string, groupId: string) {
+    if (this.connectedUsers.has(receiverId)) {
+      this.connectedUsers.get(receiverId).forEach((socket) => {
         socket.emit('notification', {
-          type: 'friendRequest',
+          type: NotificationType.GROUP_INVITE,
           payload: {
-            senderId: userId,
+            groupId: groupId,
+          },
+        });
+      });
+    }
+  }
+
+  sendFriendRequest(senderId: string, receiverId: string) {
+    if (this.connectedUsers.has(receiverId)) {
+      this.connectedUsers.get(receiverId).forEach((socket) => {
+        socket.emit('notification', {
+          type: NotificationType.FRIEND_REQUEST,
+          payload: {
+            senderId: senderId,
           },
         });
       });

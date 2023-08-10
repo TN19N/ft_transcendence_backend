@@ -5,6 +5,7 @@ import {
   Friendship,
   Preferences,
   Prisma,
+  PrismaClient,
   Profile,
   SensitiveData,
   User,
@@ -14,6 +15,46 @@ import { DatabaseService } from 'src/database/database.service';
 @Injectable()
 export class UserRepository {
   constructor(private readonly databaseService: DatabaseService) {}
+
+  async updateAvatarType(userId: string, avatarType: string) {
+    await this.databaseService.profile.update({
+      where: { id: userId },
+      data: { avatarType: avatarType },
+    });
+  }
+
+  getGroupInvites(userId: string) {
+    return this.databaseService.groupInvite.findMany({
+      where: { receiverId: userId },
+    });
+  }
+
+  async unBanUserFromGroup(userToUnBanId: string, groupId: string) {
+    await this.databaseService.group.update({
+      where: { id: groupId },
+      data: { bannedUsers: { disconnect: { id: userToUnBanId } } },
+    });
+  }
+
+  async banUserFromGroup(userToBanId: string, groupId: string) {
+    await this.databaseService.$transaction(async (prisma: PrismaClient) => {
+      await prisma.userGroup.delete({
+        where: {
+          UserGroupId: {
+            userId: userToBanId,
+            groupId: groupId,
+          },
+        },
+      });
+
+      await prisma.group.update({
+        where: { id: groupId },
+        data: {
+          bannedUsers: { connect: { id: userToBanId } },
+        },
+      });
+    });
+  }
 
   getBanedUsers(userId: string): Promise<Ban[]> {
     return this.databaseService.user
@@ -38,7 +79,7 @@ export class UserRepository {
   }
 
   async createBan(userId: string, userToBanId: string) {
-    await this.databaseService.$transaction(async (prisma) => {
+    await this.databaseService.$transaction(async (prisma: PrismaClient) => {
       await prisma.ban.create({
         data: {
           user: { connect: { id: userId } },
@@ -90,7 +131,7 @@ export class UserRepository {
   }
 
   async createFriendship(userId: string, friendId: string) {
-    await this.databaseService.$transaction(async (prisma) => {
+    await this.databaseService.$transaction(async (prisma: PrismaClient) => {
       await prisma.friendship.createMany({
         data: [
           {
