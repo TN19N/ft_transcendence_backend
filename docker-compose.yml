@@ -49,9 +49,9 @@ services:
       ENCRYPT_KEY: $ENCRYPT_KEY
     healthcheck:
       test: curl -f http://localhost:$BACKEND_PORT
-      interval: 1s
-      retries: 5
-      start_period: 2s
+      interval: 2s
+      retries: 10
+      start_period: 5s
   # database
   database:
     image: postgres:15-alpine
