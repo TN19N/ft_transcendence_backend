@@ -11,6 +11,7 @@ import {
   Body,
   DefaultValuePipe,
   Delete,
+  Patch,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { GetUserId } from 'src/authentication/decorator';
@@ -44,7 +45,7 @@ export class ChatController {
     await this.chatRepository.deleteGroup(groupId);
   }
 
-  @Post('group/:groupId/transferOwnership')
+  @Patch('group/:groupId/transferOwnership')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.OWNER)
   async transferOwnership(
@@ -55,7 +56,7 @@ export class ChatController {
     await this.chatService.transferOwnership(userId, groupId, userToTransferId);
   }
 
-  @Post('group/:groupId/leave')
+  @Patch('group/:groupId/leave')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.MEMBER_MUTED)
   async leaveGroup(
@@ -65,7 +66,7 @@ export class ChatController {
     await this.chatService.leaveGroup(userId, groupId);
   }
 
-  @Post('group/:groupId/unMute')
+  @Patch('group/:groupId/unMute')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.ADMIN)
   async unMuteUser(
@@ -75,7 +76,7 @@ export class ChatController {
     await this.chatService.unMuteUser(groupId, userToUnMuteId);
   }
 
-  @Post('group/:groupId/mute')
+  @Patch('group/:groupId/mute')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.ADMIN)
   async muteUser(
@@ -93,7 +94,7 @@ export class ChatController {
     return await this.chatRepository.getGroupMembers(groupId);
   }
 
-  @Post('group/:groupId/downgradeMember')
+  @Patch('group/:groupId/downgradeMember')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.OWNER)
   async downgradeUser(
@@ -108,7 +109,7 @@ export class ChatController {
     );
   }
 
-  @Post('group/:groupId/upgradeMember')
+  @Patch('group/:groupId/upgradeMember')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.OWNER)
   async upgradeUser(
@@ -126,7 +127,7 @@ export class ChatController {
     return await this.chatRepository.getBannedUsers(groupId);
   }
 
-  @Post('group/:groupId/unBan')
+  @Patch('group/:groupId/unBan')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.ADMIN)
   async unBanFromGroup(
@@ -136,7 +137,7 @@ export class ChatController {
     await this.chatService.unBanFromGroup(groupId, userToUnBanId);
   }
 
-  @Post('group/:groupId/ban')
+  @Patch('group/:groupId/ban')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.ADMIN)
   async banFromGroup(
@@ -166,7 +167,7 @@ export class ChatController {
     await this.chatService.acceptInvite(userId, groupId);
   }
 
-  @Post('group/:groupId/update')
+  @Patch('group/:groupId/update')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.ADMIN)
   async updateGroup(

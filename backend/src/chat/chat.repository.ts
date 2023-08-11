@@ -62,6 +62,20 @@ export class ChatRepository {
   getGroupMembers(groupId: string) {
     return this.databaseService.userGroup.findMany({
       where: { groupId: groupId },
+      select: {
+        role: true,
+        user: {
+          select: {
+            id: true,
+            profile: {
+              select: {
+                name: true,
+                status: true,
+              },
+            },
+          },
+        },
+      },
     });
   }
 

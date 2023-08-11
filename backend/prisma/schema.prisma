@@ -39,6 +39,7 @@ model User {
   sentGroupMessages       MessageGroup[]
 
   receivedGroupRequests   GroupInvite[]
+
 }
 
 enum Status {
@@ -48,14 +49,33 @@ enum Status {
 }
 
 model Profile {
-  id        String      @id
-  updatedAt DateTime    @updatedAt
+  id            String     @id
+  updatedAt     DateTime   @updatedAt
 
-  name       String     @unique
-  status     Status     @default(OFFLINE)
-  avatarType String     @default("image/jpeg")
+  name          String     @unique
+  status        Status     @default(OFFLINE)
+  avatarType    String     @default("image/jpeg")
+  wins          Int        @default(0)
+  losses        Int        @default(0)
 
-  user      User        @relation(fields: [id], references: [id], onDelete: Cascade)
+  achievements  Achievement[]
+
+  user          User       @relation(fields: [id], references: [id], onDelete: Cascade)
+}
+
+enum AchievementType {
+  FIRST_GAME
+}
+
+model Achievement {
+  type            AchievementType
+  title           String
+  description     String
+
+  user            Profile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+
+  @@id([userId, type], name: "AchievementId")
 }
 
 model Preferences {

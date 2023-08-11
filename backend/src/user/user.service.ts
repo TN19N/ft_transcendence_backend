@@ -22,14 +22,8 @@ export class UserService {
   ) {}
 
   async unBanUser(userId: string, userToUnBanId: string) {
-    if (!(await this.userRepository.getUserById(userId))) {
-      throw new NotFoundException(`user with id ${userId} not found`);
-    }
-
     if (!(await this.userRepository.getBan(userId, userToUnBanId))) {
-      throw new ConflictException(
-        `user with id ${userToUnBanId} is not banned`,
-      );
+      throw new ConflictException('user is not banned');
     }
 
     await this.userRepository.deleteBan(userId, userToUnBanId);
@@ -37,13 +31,11 @@ export class UserService {
 
   async banUser(userId: string, userToBanId: string) {
     if (userId === userToBanId) {
-      throw new ConflictException('You cannot ban yourself! hhh are you ok?');
+      throw new ConflictException('You cannot ban yourself!');
     }
 
     if (!(await this.userRepository.getUserById(userToBanId))) {
-      throw new NotFoundException(
-        `user to ban with id ${userToBanId} not found`,
-      );
+      throw new NotFoundException('user not found');
     }
 
     try {
@@ -68,7 +60,7 @@ export class UserService {
     if (friendRequest) {
       await this.userRepository.createFriendship(userId, senderId);
     } else {
-      throw new NotFoundException(`friendRequest from '${senderId}' not found`);
+      throw new NotFoundException(`friendRequest not found`);
     }
   }
 
@@ -80,7 +72,7 @@ export class UserService {
     }
 
     if (!(await this.userRepository.getUserById(friendId))) {
-      throw new NotFoundException(`friend with id ${friendId} not found`);
+      throw new NotFoundException(`user not found`);
     }
 
     if (await this.userRepository.getFriendship(userId, friendId)) {
