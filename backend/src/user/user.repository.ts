@@ -16,6 +16,25 @@ import { DatabaseService } from 'src/database/database.service';
 export class UserRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
+  getLeaderboard() {
+    return this.databaseService.profile.findMany({
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        wins: true,
+        losses: true,
+      },
+      orderBy: { wins: 'desc' },
+    });
+  }
+
+  getAchievements(userId: string) {
+    return this.databaseService.achievement.findMany({
+      where: { userId: userId },
+    });
+  }
+
   async updateAvatarType(userId: string, avatarType: string) {
     await this.databaseService.profile.update({
       where: { id: userId },
@@ -225,17 +244,27 @@ export class UserRepository {
       .receivedFriendRequests();
   }
 
-  getFriends(userId: string): Promise<Friendship[]> {
+  getFriends(userId: string) {
     return this.databaseService.user
       .findUnique({
-        where: {
-          id: userId,
-        },
-        select: {
-          friends: true,
-        },
+        where: { id: userId },
+        select: { friends: true },
       })
-      .friends();
+      .friends({
+        select: {
+          friend: {
+            select: {
+              profile: {
+                select: {
+                  id: true,
+                  name: true,
+                  status: true,
+                },
+              },
+            },
+          },
+        },
+      });
   }
 
   getUserByIntra42Id(intra42Id: number): Promise<User | null> {
@@ -329,9 +358,10 @@ export class UserRepository {
     });
   }
 
-  getUserWithNameStartingWith(userId, query: string): Promise<User[]> {
+  getUserWithNameStartingWith(userId: string, query: string) {
     return this.databaseService.user.findMany({
       where: {
+        id: { not: userId },
         bannedUsers: {
           none: {
             bannedUserId: userId,
@@ -345,6 +375,15 @@ export class UserRepository {
         profile: {
           name: {
             startsWith: query,
+          },
+        },
+      },
+      select: {
+        id: true,
+        profile: {
+          select: {
+            name: true,
+            status: true,
           },
         },
       },

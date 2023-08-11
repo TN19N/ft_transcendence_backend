@@ -3,12 +3,17 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   ForbiddenException,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   NotFoundException,
+  ParseUUIDPipe,
+  Patch,
   Post,
+  Put,
   Query,
   Res,
   StreamableFile,
@@ -43,22 +48,20 @@ export class UserController {
 
   @Post('ban')
   @HttpCode(HttpStatus.CREATED)
-  async banUser(@GetUserId() userId: string, @Query('id') id?: string) {
-    if (id) {
-      await this.userService.banUser(userId, id);
-    } else {
-      throw new BadRequestException("'id' query parameter is required");
-    }
+  async banUser(
+    @GetUserId() userId: string,
+    @Query('userToBanId', ParseUUIDPipe) userToBanId: string,
+  ) {
+    await this.userService.banUser(userId, userToBanId);
   }
 
-  @Post('unBan')
+  @Delete('unBan')
   @HttpCode(HttpStatus.CREATED)
-  async unBanUser(@GetUserId() userId: string, @Query('id') id?: string) {
-    if (id) {
-      await this.userService.unBanUser(userId, id);
-    } else {
-      throw new BadRequestException("'id' query parameter is required");
-    }
+  async unBanUser(
+    @GetUserId() userId: string,
+    @Query('userToUnBanId', ParseUUIDPipe) userToUnBanId: string,
+  ) {
+    await this.userService.unBanUser(userId, userToUnBanId);
   }
 
   @Get('baned')
@@ -67,30 +70,22 @@ export class UserController {
     return await this.userRepository.getBanedUsers(userId);
   }
 
-  @Post('acceptFriendRequest')
+  @Put('acceptFriendRequest')
   @HttpCode(HttpStatus.CREATED)
   async acceptFriendRequest(
     @GetUserId() userId: string,
-    @Query('id') senderId?: string,
+    @Query('userToFriendId', ParseUUIDPipe) userToFriendId: string,
   ) {
-    if (senderId) {
-      await this.userService.acceptFriendRequest(userId, senderId);
-    } else {
-      throw new BadRequestException("'id' query parameter is required");
-    }
+    await this.userService.acceptFriendRequest(userId, userToFriendId);
   }
 
   @Post('friendRequest')
   @HttpCode(HttpStatus.CREATED)
   async sendFriendRequest(
     @GetUserId() userId: string,
-    @Query('id') friendId?: string,
+    @Query('userToSendToId', ParseUUIDPipe) userToSendToId: string,
   ) {
-    if (friendId) {
-      await this.userService.sendFriendRequest(userId, friendId);
-    } else {
-      throw new BadRequestException("'id' query parameter is required");
-    }
+    await this.userService.sendFriendRequest(userId, userToSendToId);
   }
 
   @Get('friendRequest/sent')
@@ -114,23 +109,23 @@ export class UserController {
     if (user) {
       return user;
     } else {
-      throw new NotFoundException(`User with id ${id ?? userId} not found`);
+      throw new NotFoundException(`User not found`);
     }
   }
 
-  @Post('turnOn2fa')
+  @Put('turnOn2fa')
   @HttpCode(HttpStatus.CREATED)
   async turnOn2fa(@GetUserId() userId: string) {
     return await this.userService.turnOn2fa(userId);
   }
 
-  @Post('turnOff2fa')
+  @Put('turnOff2fa')
   @HttpCode(HttpStatus.CREATED)
   async turnOff2fa(@GetUserId() userId: string) {
     await this.userService.turnOff2fa(userId);
   }
 
-  @Post('enable2fa')
+  @Patch('enable2fa')
   @HttpCode(HttpStatus.CREATED)
   async enable2fa(@GetUserId() userId: string, @Body() twoFaDto: TwofaDto) {
     const isValid = await this.authenticationService.validate2fa(
@@ -162,7 +157,7 @@ export class UserController {
     if (profile) {
       return profile;
     } else {
-      throw new NotFoundException(`Profile with id ${id ?? userId} not found`);
+      throw new NotFoundException(`Profile not found`);
     }
   }
 
@@ -172,7 +167,7 @@ export class UserController {
     return await this.userRepository.getPreferences(userId);
   }
 
-  @Post('profile')
+  @Put('profile')
   @HttpCode(HttpStatus.CREATED)
   async updateProfile(
     @GetUserId() userId: string,
@@ -194,6 +189,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @ApiQuery({ name: 'id', required: false })
   @ApiConsumes('multipart/form-data')
+  @Header('Content-Disposition', 'inline')
   async getAvatar(
     @GetUserId() userId: string,
     @Res({ passthrough: true }) response: Response,
@@ -202,14 +198,12 @@ export class UserController {
     const user = await this.userRepository.getUserById(id ?? userId);
 
     if (!user) {
-      throw new NotFoundException(`User with id ${id ?? userId} not found`);
+      throw new NotFoundException(`User not found`);
     }
 
     const { avatarType } = await this.userRepository.getProfile(id ?? userId);
 
     response.set('Content-Type', avatarType);
-    response.set('Content-Disposition', 'inline');
-
     return new StreamableFile(
       createReadStream(join(process.cwd(), `./upload/${user.id}`)),
     );
@@ -250,6 +244,25 @@ export class UserController {
   async getFriends(@GetUserId() userId: string) {
     return await this.userRepository.getFriends(userId);
   }
+
+  @Get('achievements')
+  @HttpCode(HttpStatus.OK)
+  @ApiQuery({ name: 'id', required: false })
+  async getAchievements(@GetUserId() userId: string, @Query('id') id?: string) {
+    const user = await this.userRepository.getUserById(id ?? userId);
+
+    if (user) {
+      return await this.userRepository.getAchievements(user.id);
+    } else {
+      throw new NotFoundException(`User not found`);
+    }
+  }
+
+  @Get('leaderboard')
+  @HttpCode(HttpStatus.OK)
+  async getLeaderboard() {
+    return await this.userRepository.getLeaderboard();
+  }
 }
 
 @Controller('v1/test')
@@ -273,23 +286,19 @@ export class TestController {
   @HttpCode(HttpStatus.OK)
   async switch(
     @Res({ passthrough: true }) response: Response,
-    @Query('id') id?: string,
+    @Query('userToSwitchToId', ParseUUIDPipe) userToSwitchToId: string,
   ) {
-    if (id) {
-      const user = await this.userRepository.getUserById(id);
+    const user = await this.userRepository.getUserById(userToSwitchToId);
 
-      if (user) {
-        response.setHeader(
-          'Set-Cookie',
-          `Authentication=${
-            (await this.authenticationService.generateLoginToken(user.id)).token
-          }; Path=/`,
-        );
-      } else {
-        throw new NotFoundException(`User with id ${id} not found`);
-      }
+    if (user) {
+      response.setHeader(
+        'Set-Cookie',
+        `Authentication=${
+          (await this.authenticationService.generateLoginToken(user.id)).token
+        }; Path=/`,
+      );
     } else {
-      throw new BadRequestException("'id' query parameter is required");
+      throw new NotFoundException(`User not found`);
     }
   }
 }

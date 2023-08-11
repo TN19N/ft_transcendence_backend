@@ -32,7 +32,7 @@ export class GameController {
     if (user) {
       return await this.gameRepository.getRecord(user.id);
     } else {
-      throw new NotFoundException(`User with id '${id ?? userId}' not found`);
+      throw new NotFoundException(`User not found`);
     }
   }
 }

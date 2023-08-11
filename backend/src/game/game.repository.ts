@@ -8,9 +8,7 @@ export class GameRepository {
 
   getRecord(userId: string): Promise<GameRecord[]> {
     return this.databaseService.gameRecord.findMany({
-      where: {
-        userId: userId,
-      },
+      where: { userId: userId },
     });
   }
 }
