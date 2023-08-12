@@ -7,8 +7,9 @@ import { DatabaseModule } from 'src/database/database.module';
 import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports: [DatabaseModule, UserModule],
+  providers: [DatabaseModule, GameGateway, GameService, UserModule]
   controllers: [GameController],
   providers: [GameService, GameGateway, GameRepository],
 })
 export class GameModule {}
+
