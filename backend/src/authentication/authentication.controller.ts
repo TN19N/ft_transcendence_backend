@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
-import { Intra42Guard, Jwt2faGuard, JwtGuard } from './guard';
+import { GoogleGuard, Intra42Guard, Jwt2faGuard, JwtGuard } from './guard';
 import { GetUserId } from './decorator';
 import { Response } from 'express';
 import { ConfigurationService } from 'src/configuration/configuration.service';
@@ -29,6 +29,26 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.TEMPORARY_REDIRECT)
   @UseGuards(Intra42Guard)
   async intra42(
+    @GetUserId() userId: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { token, twofa } =
+      await this.authenticationService.generateLoginToken(userId);
+    response.setHeader('Set-Cookie', `Authentication=${token}; Path=/`);
+
+    if (twofa) {
+      response.redirect(this.configurationService.get('FRONTEND_URL') + '/2fa');
+    } else {
+      response.redirect(
+        this.configurationService.get('FRONTEND_URL') + '/home',
+      );
+    }
+  }
+
+  @Get('google')
+  @HttpCode(HttpStatus.TEMPORARY_REDIRECT)
+  @UseGuards(GoogleGuard)
+  async google(
     @GetUserId() userId: string,
     @Res({ passthrough: true }) response: Response,
   ) {

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
-import axios from 'axios';
+import { Prisma, User } from '@prisma/client';
 import { UserRepository } from 'src/user/user.repository';
-import * as fs from 'fs';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interface';
 import { createDecipheriv } from 'crypto';
 import { ConfigurationService } from 'src/configuration/configuration.service';
 import { authenticator } from 'otplib';
+import axios from 'axios';
+import * as fs from 'fs';
 
 @Injectable()
 export class AuthenticationService {
@@ -17,28 +17,87 @@ export class AuthenticationService {
     private configurationService: ConfigurationService,
   ) {}
 
+  async createNewUser(
+    id: { intra42Id?: number; googleId?: string },
+    username?: string,
+    avatar_link?: string,
+  ): Promise<User> {
+    console.log(' intra42Id: ' + id.intra42Id + ' googleId: ' + id.googleId);
+    console.log(' username: ' + username + ' avatar_link: ' + avatar_link);
+
+    username = null;
+    avatar_link = null;
+
+    let user: User;
+    while (true) {
+      if (!username) {
+        username = 'user' + Math.floor(Math.random() * 1000000);
+      }
+
+      try {
+        user = await this.userRepository.createUser(username, id);
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          if (error.code === 'P2002') {
+            username = username + Math.floor(Math.random() * 10);
+            continue;
+          }
+        }
+
+        throw error;
+      }
+      break;
+    }
+
+    let profilePicture: Buffer;
+    if (avatar_link) {
+      const response = await axios.get(avatar_link, {
+        responseType: 'arraybuffer',
+      });
+
+      profilePicture = Buffer.from(response.data, 'binary');
+    } else {
+      profilePicture = await fs.promises.readFile('./assets/avatar.png');
+    }
+
+    if (!fs.existsSync('./upload')) {
+      fs.mkdirSync('./upload');
+    }
+
+    await fs.promises.writeFile('./upload/' + user.id, profilePicture);
+
+    return user;
+  }
+
+  async validateGoogleUser(profile: any): Promise<User> {
+    let user: User | null = await this.userRepository.getUserByGoogleId(
+      profile.id,
+    );
+
+    if (!user) {
+      user = await this.createNewUser(
+        { googleId: profile.id },
+        profile?.displayName,
+        profile?.photos[0]?.value,
+      );
+    }
+
+    return user;
+  }
+
   async validateIntra42User(profile: any): Promise<User> {
     const intra42Id: number = parseInt(profile.id);
     let user: User | null = await this.userRepository.getUserByIntra42Id(
       intra42Id,
     );
 
+    console.log('user: ', user);
     if (!user) {
-      const username: string = profile.username;
-      user = await this.userRepository.createUser(username, intra42Id);
-
-      // Get the 42 profile picture
-      const profilePictureUrl: string = profile._json.image.link;
-      const response = await axios.get(profilePictureUrl, {
-        responseType: 'arraybuffer',
-      });
-      const profilePicture: Buffer = Buffer.from(response.data, 'binary');
-
-      // Save the profile picture in the upload folder
-      if (!fs.existsSync('./upload')) {
-        fs.mkdirSync('./upload');
-      }
-      await fs.promises.writeFile('./upload/' + user.id, profilePicture);
+      user = await this.createNewUser(
+        { intra42Id: intra42Id },
+        profile?.username,
+        profile?._json?.image?.link,
+      );
     }
 
     return user;

@@ -9,7 +9,6 @@ datasource db {
 
 model User {
   id                      String          @id @default(uuid())
-  intra42Id               Int             @unique
   createdAt               DateTime        @default(now())
 
   profile                 Profile?
@@ -90,6 +89,9 @@ model Preferences {
 model SensitiveData {
   id                            String    @id
   updatedAt                     DateTime  @updatedAt
+
+  intra42Id                     Int?      @unique
+  googleId                      String?   @unique
 
   twoFactorAuthenticationSecret String?
   iv                            String?

@@ -16,9 +16,9 @@ import { UserGateway } from './user.gateway';
 @Injectable()
 export class UserService {
   constructor(
+    private userGateway: UserGateway,
     private userRepository: UserRepository,
     private configurationService: ConfigurationService,
-    private userGateway: UserGateway,
   ) {}
 
   async unBanUser(userId: string, userToUnBanId: string) {
@@ -104,10 +104,9 @@ export class UserService {
   // for testing purposes
   async addRandomUser(): Promise<User> {
     const randomId = Math.floor(Math.random() * 1000000);
-    const user = await this.userRepository.createUser(
-      `bot${randomId}`,
-      randomId,
-    );
+    const user = await this.userRepository.createUser(`bot${randomId}`, {
+      intra42Id: randomId,
+    });
 
     const read = fs.createReadStream('./assets/bot.png');
     const write = fs.createWriteStream(`./upload/${user.id}`);

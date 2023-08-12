@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
   Ban,
   FriendRequest,
@@ -267,12 +267,22 @@ export class UserRepository {
       });
   }
 
+  getUserByGoogleId(googleId: string): Promise<User | null> {
+    return this.databaseService.sensitiveData
+      .findUnique({
+        where: { googleId: googleId },
+        select: { user: true },
+      })
+      .user();
+  }
+
   getUserByIntra42Id(intra42Id: number): Promise<User | null> {
-    return this.databaseService.user.findUnique({
-      where: {
-        intra42Id: intra42Id,
-      },
-    });
+    return this.databaseService.sensitiveData
+      .findUnique({
+        where: { intra42Id: intra42Id },
+        select: { user: true },
+      })
+      .user();
   }
 
   getUserById(id: string): Promise<User | null> {
@@ -283,19 +293,45 @@ export class UserRepository {
     });
   }
 
-  createUser(name: string, intra42Id: number): Promise<User> {
-    return this.databaseService.user.create({
-      data: {
-        intra42Id: intra42Id,
-        profile: {
-          create: {
-            name: name,
+  createUser(
+    name: string,
+    { intra42Id, googleId }: { intra42Id?: number; googleId?: string },
+  ): Promise<User> {
+    if (intra42Id) {
+      return this.databaseService.user.create({
+        data: {
+          profile: {
+            create: {
+              name: name,
+            },
+          },
+          preferences: { create: {} },
+          sensitiveData: {
+            create: {
+              intra42Id: intra42Id,
+            },
           },
         },
-        preferences: { create: {} },
-        sensitiveData: { create: {} },
-      },
-    });
+      });
+    } else if (googleId) {
+      return this.databaseService.user.create({
+        data: {
+          profile: {
+            create: {
+              name: name,
+            },
+          },
+          preferences: { create: {} },
+          sensitiveData: {
+            create: {
+              googleId: googleId,
+            },
+          },
+        },
+      });
+    } else {
+      throw new InternalServerErrorException();
+    }
   }
 
   getProfile(id: string): Promise<Profile | null> {

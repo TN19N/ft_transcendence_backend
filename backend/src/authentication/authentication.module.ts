@@ -5,7 +5,12 @@ import { ConfigurationModule } from 'src/configuration/configuration.module';
 import { UserModule } from 'src/user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigurationService } from 'src/configuration/configuration.service';
-import { Intra42Strategy, Jwt2faStrategy, JwtStrategy } from './strategy';
+import {
+  GoogleStrategy,
+  Intra42Strategy,
+  Jwt2faStrategy,
+  JwtStrategy,
+} from './strategy';
 
 @Module({
   imports: [
@@ -26,6 +31,7 @@ import { Intra42Strategy, Jwt2faStrategy, JwtStrategy } from './strategy';
   providers: [
     AuthenticationService,
     Intra42Strategy,
+    GoogleStrategy,
     JwtStrategy,
     Jwt2faStrategy,
   ],
