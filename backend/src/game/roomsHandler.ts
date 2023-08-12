@@ -1,5 +1,5 @@
-import { Room, RoomInfo, UserData, playerPair } from './PongTypes';
-import { keyPressed, nextFram } from './gameLogic';
+import { Room, RoomInfo, playerPair } from './PongTypes';
+import { keyPressed, nextFrame } from './gameLogic';
 import { initRoom } from './roomUtils';
 import { Socket } from 'socket.io';
 
@@ -17,14 +17,11 @@ export default class RoomsGameHandler {
   onNewMatch(clients: playerPair, speed: string) {
     const room = initRoom(clients, speed);
     this.Rooms.push(room);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     room.interval = setInterval((_) => {
-      const newPos = nextFram(room);
+      const newPos = nextFrame(room);
       if (newPos) {
         [room.ball.x, room.ball.y] = newPos;
-        // console.log('Ok: ', newPos);
-      }
-      else  {
-        // console.log('No');
       }
     }, GAME_INTERVAL);
   }

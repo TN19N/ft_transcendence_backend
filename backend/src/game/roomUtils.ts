@@ -6,7 +6,7 @@ const SPEEDS = {
   Fast: 1.5,
 };
 
-const DEFAULT_SIZE = 50; // standare size for calculation W: 100, H: 100;
+const DEFAULT_SIZE = 50; // standard size for calculation W: 100, H: 100;
 
 export const initRoom = (clients: playerPair, speed: string): Room => {
   const room: Room = {
@@ -21,8 +21,8 @@ export const initRoom = (clients: playerPair, speed: string): Room => {
       y: DEFAULT_SIZE,
     },
     ball: {
-      x:  DEFAULT_SIZE,
-      y:  DEFAULT_SIZE,
+      x: DEFAULT_SIZE,
+      y: DEFAULT_SIZE,
       vy: randomVelocity(SPEEDS[speed]),
       vx: randomVelocity(SPEEDS[speed]),
     },
@@ -39,23 +39,20 @@ const randomVelocity = (speed: number) => {
   return -speed;
 };
 
-
 export const resetGame = (room: Room) => {
-
-  room.ball.x   = DEFAULT_SIZE;
-  room.ball.y   = DEFAULT_SIZE;
-  room.revX     = DEFAULT_SIZE,
-  room.ball.vx  = randomVelocity(room.speed);
-  room.ball.vy  = randomVelocity(room.speed);
-}
+  room.ball.x = DEFAULT_SIZE;
+  room.ball.y = DEFAULT_SIZE;
+  (room.revX = DEFAULT_SIZE), (room.ball.vx = randomVelocity(room.speed));
+  room.ball.vy = randomVelocity(room.speed);
+};
 
 export const emitScore = (room: Room) => {
-    const p1Info  = 'P1: ' + room.p1.score.toString();
-    const p2Info  = 'P2: ' + room.p2.score.toString();
-    const data    = { this: p1Info, other: p2Info };
+  const p1Info = 'P1: ' + room.p1.score.toString();
+  const p2Info = 'P2: ' + room.p2.score.toString();
+  const data = { this: p1Info, other: p2Info };
 
-    room.p1.socket.emit('new-score', data);
-    data.this = p2Info;
-    data.other = p1Info;
-    room.p2.socket.emit('new-score', data);
-}
+  room.p1.socket.emit('new-score', data);
+  data.this = p2Info;
+  data.other = p1Info;
+  room.p2.socket.emit('new-score', data);
+};

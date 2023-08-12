@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 
-export type gameQeue = {
+export type gameQueue = {
   Slow: Socket | null;
   Medium: Socket | null;
   Fast: Socket | null;

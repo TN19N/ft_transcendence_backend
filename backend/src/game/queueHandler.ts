@@ -1,8 +1,8 @@
 import { Socket } from 'socket.io';
-import { gameQeue, playerPair } from './PongTypes';
+import { gameQueue, playerPair } from './PongTypes';
 
 export default class QueueGameHandler {
-  private pool: gameQeue;
+  private pool: gameQueue;
 
   constructor() {
     this.pool = {
@@ -26,7 +26,7 @@ export default class QueueGameHandler {
   }
 
   quit(client: Socket) {
-    for (let key in this.pool) {
+    for (const key in this.pool) {
       if (this.pool[key] && this.pool[key].id === client.id) {
         this.pool[key] = null;
         return;
