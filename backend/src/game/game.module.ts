@@ -5,9 +5,10 @@ import { GameGateway } from './game.gateway';
 import { GameRepository } from './game.repository';
 import { DatabaseModule } from 'src/database/database.module';
 import { UserModule } from 'src/user/user.module';
+import { AuthenticationModule } from 'src/authentication/authentication.module';
 
 @Module({
-  imports: [DatabaseModule, UserModule],
+  imports: [UserModule, AuthenticationModule, DatabaseModule],
   controllers: [GameController],
   providers: [GameService, GameGateway, GameRepository],
 })
