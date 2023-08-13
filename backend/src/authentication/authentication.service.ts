@@ -22,12 +22,6 @@ export class AuthenticationService {
     username?: string,
     avatar_link?: string,
   ): Promise<User> {
-    console.log(' intra42Id: ' + id.intra42Id + ' googleId: ' + id.googleId);
-    console.log(' username: ' + username + ' avatar_link: ' + avatar_link);
-
-    username = null;
-    avatar_link = null;
-
     let user: User;
     while (true) {
       if (!username) {
@@ -39,7 +33,7 @@ export class AuthenticationService {
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
           if (error.code === 'P2002') {
-            username = username + Math.floor(Math.random() * 10);
+            username += Math.floor(Math.random() * 10);
             continue;
           }
         }
@@ -91,7 +85,6 @@ export class AuthenticationService {
       intra42Id,
     );
 
-    console.log('user: ', user);
     if (!user) {
       user = await this.createNewUser(
         { intra42Id: intra42Id },
