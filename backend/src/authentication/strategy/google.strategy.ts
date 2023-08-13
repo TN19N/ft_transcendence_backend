@@ -19,7 +19,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   async validate(_unused1: string, _unused2: string, profile: any) {
-    console.log(profile);
     return this.authenticationService.validateGoogleUser(profile);
   }
 }

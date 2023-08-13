@@ -19,7 +19,6 @@ export class GameService {
 
   onNewConnection(client: Socket, speed: string) {
     const match = this.queue.addClientToQueue(client, speed);
-    console.log('match', match);
     if (!match) return;
     this.room.onNewMatch(match, speed);
   }

@@ -53,11 +53,6 @@ services:
       FRONTEND_URL: "http://$SERVER_HOST"
       JWT_SECRET: $JWT_SECRET
       ENCRYPT_KEY: $ENCRYPT_KEY
-    healthcheck:
-      test: curl -f http://localhost:$BACKEND_PORT
-      interval: 2s
-      retries: 10
-      start_period: 5s
   # database
   database:
     image: postgres:15-alpine
