@@ -14,6 +14,7 @@ import { Status } from '@prisma/client';
 enum NotificationType {
   FRIEND_REQUEST = 'FRIEND_REQUEST',
   GROUP_INVITE = 'GROUP_INVITE',
+  GAME_INVITE = 'GAME_INVITE',
 }
 
 @WebSocketGateway({
@@ -69,6 +70,19 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
           value.filter((item) => item !== socket),
         );
       }
+    }
+  }
+
+  sendGameInvite(receiverId: string, senderId: string) {
+    if (this.connectedUsers.has(receiverId)) {
+      this.connectedUsers.get(receiverId).forEach((socket) => {
+        socket.emit('notification', {
+          type: NotificationType.GAME_INVITE,
+          payload: {
+            senderId: senderId,
+          },
+        });
+      });
     }
   }
 
