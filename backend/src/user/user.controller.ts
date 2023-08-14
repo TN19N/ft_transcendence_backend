@@ -56,7 +56,6 @@ export class UserController {
     @Param('achievementType', new ParseEnumPipe(AchievementType))
     achievementType: AchievementType,
   ) {
-    console.log(`./upload/${achievementType}`);
     return new StreamableFile(
       createReadStream(join(process.cwd(), `./assets/${achievementType}`)),
     );
