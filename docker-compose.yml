@@ -25,10 +25,15 @@ services:
       GOOGLE_CLIENT_ID: $GOOGLE_CLIENT_ID
       GOOGLE_CLIENT_SECRET: $GOOGLE_CLIENT_SECRET
       JWT_SECRET: $JWT_SECRET
-      INTRA42_CALLBACK_URL: "http://localhost:$BACKEND_PORT/api/v1/auth/intra42"
-      GOOGLE_CALLBACK_URL: "http://localhost:$BACKEND_PORT/api/v1/auth/google"
-      FRONTEND_URL: "http://localhost"
+      INTRA42_CALLBACK_URL: "$SERVER_HOST/api/v1/auth/intra42"
+      GOOGLE_CALLBACK_URL: "$SERVER_HOST/api/v1/auth/google"
+      FRONTEND_URL: "$SERVER_HOST"
       ENCRYPT_KEY: $ENCRYPT_KEY
+    healthcheck:
+      test: curl http://localhost:$BACKEND_PORT || exit 1
+      interval: 3s
+      retries: 100
+      start_period: 5s
   # backend for production
   production:
     build:
@@ -48,15 +53,15 @@ services:
       INTRA42_CLIENT_SECRET: $INTRA42_CLIENT_SECRET
       GOOGLE_CLIENT_ID: $GOOGLE_CLIENT_ID
       GOOGLE_CLIENT_SECRET: $GOOGLE_CLIENT_SECRET
-      INTRA42_CALLBACK_URL: "http://$SERVER_HOST/api/v1/auth/intra42"
-      GOOGLE_CALLBACK_URL: "http://$SERVER_HOST/api/v1/auth/google"
-      FRONTEND_URL: "http://$SERVER_HOST"
+      INTRA42_CALLBACK_URL: "$SERVER_HOST/api/v1/auth/intra42"
+      GOOGLE_CALLBACK_URL: "$SERVER_HOST/api/v1/auth/google"
+      FRONTEND_URL: "$SERVER_HOST"
       JWT_SECRET: $JWT_SECRET
       ENCRYPT_KEY: $ENCRYPT_KEY
     healthcheck:
-      test: curl --fail http://localhost:$BACKEND_PORT || exit 1
-      interval: 2s
-      retries: 15
+      test: curl http://localhost:$BACKEND_PORT || exit 1
+      interval: 3s
+      retries: 100
       start_period: 5s
   # database
   database:
@@ -72,7 +77,7 @@ services:
       POSTGRES_DB: $DATABASE_NAME
       PGPORT: $DATABASE_PORT
     healthcheck:
-      test: pg_isready -U $DATABASE_USER -d $DATABASE_NAME
+      test: pg_isready -U $DATABASE_USER -d $DATABASE_NAME || exit 1
       interval: 1s
       retries: 5
       start_period: 2s
@@ -88,7 +93,7 @@ services:
     networks: [server-network]
     volumes: [database-client-data:/opt/cloudbeaver/data]
     healthcheck:
-      test: curl -f http://localhost:8978
+      test: curl http://localhost:8978 || exit 1
       interval: 1s
       retries: 5
       start_period: 2s
