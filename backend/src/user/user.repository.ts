@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
+  AchievementType,
   Ban,
   FriendRequest,
   Friendship,
@@ -15,6 +16,72 @@ import { DatabaseService } from 'src/database/database.service';
 @Injectable()
 export class UserRepository {
   constructor(private readonly databaseService: DatabaseService) {}
+
+  async createAchievement(userId: string, achievementType: AchievementType) {
+    let title = '';
+    let discretion = '';
+
+    switch (achievementType) {
+      case AchievementType.WIN_1:
+        title = 'First win';
+        discretion = 'You won your first game';
+        break;
+      case AchievementType.WIN_10:
+        title = '10 wins';
+        discretion = 'You won 10 games';
+        break;
+      case AchievementType.WIN_100:
+        title = '100 wins';
+        discretion = 'You won 100 games';
+        break;
+    }
+
+    await this.databaseService.achievement.create({
+      data: {
+        user: { connect: { id: userId } },
+        type: achievementType,
+        title: title,
+        description: discretion,
+      },
+    });
+  }
+
+  async saveGameRecord(p1: string, p2: string, s1: number, s2: number) {
+    await this.databaseService.$transaction(async (prisma: PrismaClient) => {
+      await this.databaseService.gameRecord.createMany({
+        data: [
+          {
+            userId: p1,
+            opponentId: p2,
+            userScore: s1,
+            opponentScore: s2,
+          },
+          {
+            userId: p2,
+            opponentId: p1,
+            userScore: s2,
+            opponentScore: s1,
+          },
+        ],
+      });
+
+      await prisma.profile.update({
+        where: { id: p1 },
+        data: {
+          wins: { increment: s1 > s2 ? 1 : 0 },
+          losses: { increment: s1 < s2 ? 1 : 0 },
+        },
+      });
+
+      await prisma.profile.update({
+        where: { id: p2 },
+        data: {
+          wins: { increment: s2 > s1 ? 1 : 0 },
+          losses: { increment: s2 < s1 ? 1 : 0 },
+        },
+      });
+    });
+  }
 
   getLeaderboard() {
     return this.databaseService.profile.findMany({
@@ -106,7 +173,7 @@ export class UserRepository {
         },
       });
 
-      await prisma.friendship.deleteMany({
+      const friendship = await prisma.friendship.deleteMany({
         where: {
           OR: [
             {
@@ -121,20 +188,32 @@ export class UserRepository {
         },
       });
 
-      await prisma.friendRequest.deleteMany({
-        where: {
-          OR: [
-            {
-              senderId: userId,
-              receiverId: userToBanId,
-            },
-            {
-              senderId: userToBanId,
-              receiverId: userId,
-            },
-          ],
-        },
-      });
+      if (friendship.count > 0) {
+        await prisma.profile.update({
+          where: { id: userId },
+          data: { friendsNumber: { decrement: 1 } },
+        });
+
+        await prisma.profile.update({
+          where: { id: userToBanId },
+          data: { friendsNumber: { decrement: 1 } },
+        });
+      } else {
+        await prisma.friendRequest.deleteMany({
+          where: {
+            OR: [
+              {
+                senderId: userId,
+                receiverId: userToBanId,
+              },
+              {
+                senderId: userToBanId,
+                receiverId: userId,
+              },
+            ],
+          },
+        });
+      }
     });
   }
 
@@ -177,6 +256,16 @@ export class UserRepository {
             },
           ],
         },
+      });
+
+      await prisma.profile.update({
+        where: { id: userId },
+        data: { friendsNumber: { increment: 1 } },
+      });
+
+      await prisma.profile.update({
+        where: { id: friendId },
+        data: { friendsNumber: { increment: 1 } },
       });
     });
   }

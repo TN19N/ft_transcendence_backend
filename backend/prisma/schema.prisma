@@ -56,6 +56,7 @@ model Profile {
   avatarType    String     @default("image/jpeg")
   wins          Int        @default(0)
   losses        Int        @default(0)
+  friendsNumber Int        @default(0)
 
   achievements  Achievement[]
 
@@ -63,7 +64,9 @@ model Profile {
 }
 
 enum AchievementType {
-  FIRST_GAME
+  WIN_1
+  WIN_10
+  WIN_100
 }
 
 model Achievement {

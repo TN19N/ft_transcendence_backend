@@ -10,6 +10,8 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
+  Param,
+  ParseEnumPipe,
   ParseUUIDPipe,
   Patch,
   Post,
@@ -32,7 +34,7 @@ import { createReadStream } from 'fs';
 import { join } from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { User } from '@prisma/client';
+import { AchievementType, User } from '@prisma/client';
 import { Response } from 'express';
 
 @Controller('v1/user')
@@ -45,6 +47,20 @@ export class UserController {
     private userRepository: UserRepository,
     private authenticationService: AuthenticationService,
   ) {}
+
+  @Get('achievement/:achievementType')
+  @HttpCode(HttpStatus.OK)
+  @Header('Content-Type', 'image/png')
+  @Header('Content-Disposition', 'inline')
+  async getAchievement(
+    @Param('achievementType', new ParseEnumPipe(AchievementType))
+    achievementType: AchievementType,
+  ) {
+    console.log(`./upload/${achievementType}`);
+    return new StreamableFile(
+      createReadStream(join(process.cwd(), `./assets/${achievementType}`)),
+    );
+  }
 
   @Post('ban')
   @HttpCode(HttpStatus.CREATED)

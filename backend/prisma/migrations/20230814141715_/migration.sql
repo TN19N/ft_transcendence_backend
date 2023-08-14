@@ -2,6 +2,9 @@
 CREATE TYPE "Status" AS ENUM ('ONLINE', 'PLAYING', 'OFFLINE');
 
 -- CreateEnum
+CREATE TYPE "AchievementType" AS ENUM ('WIN_1', 'WIN_10', 'WIN_100');
+
+-- CreateEnum
 CREATE TYPE "Role" AS ENUM ('OWNER', 'ADMIN', 'MEMBER', 'MEMBER_MUTED');
 
 -- CreateEnum
@@ -10,7 +13,6 @@ CREATE TYPE "GroupType" AS ENUM ('PRIVATE', 'PUBLIC', 'PROTECTED');
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
-    "intra42Id" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -23,8 +25,21 @@ CREATE TABLE "Profile" (
     "name" TEXT NOT NULL,
     "status" "Status" NOT NULL DEFAULT 'OFFLINE',
     "avatarType" TEXT NOT NULL DEFAULT 'image/jpeg',
+    "wins" INTEGER NOT NULL DEFAULT 0,
+    "losses" INTEGER NOT NULL DEFAULT 0,
+    "friendsNumber" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Profile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Achievement" (
+    "type" "AchievementType" NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "Achievement_pkey" PRIMARY KEY ("userId","type")
 );
 
 -- CreateTable
@@ -40,6 +55,8 @@ CREATE TABLE "Preferences" (
 CREATE TABLE "SensitiveData" (
     "id" TEXT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "intra42Id" INTEGER,
+    "googleId" TEXT,
     "twoFactorAuthenticationSecret" TEXT,
     "iv" TEXT,
 
@@ -152,10 +169,13 @@ CREATE TABLE "_BannedUserToGroup" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_intra42Id_key" ON "User"("intra42Id");
+CREATE UNIQUE INDEX "Profile_name_key" ON "Profile"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Profile_name_key" ON "Profile"("name");
+CREATE UNIQUE INDEX "SensitiveData_intra42Id_key" ON "SensitiveData"("intra42Id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SensitiveData_googleId_key" ON "SensitiveData"("googleId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Group_name_key" ON "Group"("name");
@@ -168,6 +188,9 @@ CREATE INDEX "_BannedUserToGroup_B_index" ON "_BannedUserToGroup"("B");
 
 -- AddForeignKey
 ALTER TABLE "Profile" ADD CONSTRAINT "Profile_id_fkey" FOREIGN KEY ("id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Achievement" ADD CONSTRAINT "Achievement_userId_fkey" FOREIGN KEY ("userId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Preferences" ADD CONSTRAINT "Preferences_id_fkey" FOREIGN KEY ("id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
