@@ -128,13 +128,13 @@ export class UserController {
     }
   }
 
-  @Put('turnOn2fa')
+  @Patch('turnOn2fa')
   @HttpCode(HttpStatus.CREATED)
   async turnOn2fa(@GetUserId() userId: string) {
     return await this.userService.turnOn2fa(userId);
   }
 
-  @Put('turnOff2fa')
+  @Patch('turnOff2fa')
   @HttpCode(HttpStatus.CREATED)
   async turnOff2fa(@GetUserId() userId: string) {
     await this.userService.turnOff2fa(userId);
