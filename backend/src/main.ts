@@ -15,7 +15,6 @@ async function bootstrap() {
   app.enableCors({
     origin: configurationService.get('FRONTEND_URL'),
     credentials: true,
-    methods: ['GET', 'POST'],
   });
 
   // Pipes

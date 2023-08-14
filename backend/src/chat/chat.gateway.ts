@@ -12,6 +12,8 @@ enum MessageType {
 }
 
 @WebSocketGateway({
+  cors: process.env.FRONTEND_URL,
+  credentials: true,
   namespace: 'chat',
 })
 export class ChatGateway {

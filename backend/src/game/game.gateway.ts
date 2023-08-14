@@ -13,6 +13,8 @@ import { UserRepository } from 'src/user/user.repository';
 import { UnauthorizedException } from '@nestjs/common';
 
 @WebSocketGateway({
+  cors: process.env.FRONTEND_URL,
+  credentials: true,
   namespace: 'game',
 })
 export class GameGateway implements OnGatewayDisconnect {

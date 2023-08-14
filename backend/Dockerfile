@@ -11,9 +11,7 @@ WORKDIR /usr/src/app
 
 RUN npm install -g npm@latest
 
-USER node
-
-CMD npm ci && npm run start:dev
+CMD npm install && npm run start:dev
 
 ###################
 # BUILD FOR PRODUCTION
@@ -38,7 +36,7 @@ USER node
 ###################
 FROM node:18.17.0-alpine3.18 As production
 
-RUN apk update && apk upgrade --no-cache
+RUN apk update && apk upgrade --no-cache && apk add --no-cache curl
 
 ENV NODE_ENV production
 

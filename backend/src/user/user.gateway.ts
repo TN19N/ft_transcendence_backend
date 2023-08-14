@@ -17,6 +17,8 @@ enum NotificationType {
 }
 
 @WebSocketGateway({
+  cors: process.env.FRONTEND_URL,
+  credentials: true,
   namespace: 'user',
 })
 export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {

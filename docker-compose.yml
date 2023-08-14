@@ -27,7 +27,7 @@ services:
       JWT_SECRET: $JWT_SECRET
       INTRA42_CALLBACK_URL: "http://localhost:$BACKEND_PORT/api/v1/auth/intra42"
       GOOGLE_CALLBACK_URL: "http://localhost:$BACKEND_PORT/api/v1/auth/google"
-      FRONTEND_URL: "http://www.google.com"
+      FRONTEND_URL: "http://localhost"
       ENCRYPT_KEY: $ENCRYPT_KEY
   # backend for production
   production:
@@ -53,6 +53,11 @@ services:
       FRONTEND_URL: "http://$SERVER_HOST"
       JWT_SECRET: $JWT_SECRET
       ENCRYPT_KEY: $ENCRYPT_KEY
+    healthcheck:
+      test: curl --fail http://localhost:$BACKEND_PORT || exit 1
+      interval: 2s
+      retries: 15
+      start_period: 5s
   # database
   database:
     image: postgres:15-alpine
