@@ -37,11 +37,9 @@ export class AuthenticationController {
     response.setHeader('Set-Cookie', `Authentication=${token}; Path=/`);
 
     if (twofa) {
-      response.redirect(this.configurationService.get('FRONTEND_URL') + '/2fa');
+      response.redirect('/2fa');
     } else {
-      response.redirect(
-        this.configurationService.get('FRONTEND_URL') + '/home',
-      );
+      response.redirect('/home');
     }
   }
 
@@ -57,11 +55,9 @@ export class AuthenticationController {
     response.setHeader('Set-Cookie', `Authentication=${token}; Path=/`);
 
     if (twofa) {
-      response.redirect(this.configurationService.get('FRONTEND_URL') + '/2fa');
+      response.redirect('/2fa');
     } else {
-      response.redirect(
-        this.configurationService.get('FRONTEND_URL') + '/home',
-      );
+      response.redirect('/home');
     }
   }
 
