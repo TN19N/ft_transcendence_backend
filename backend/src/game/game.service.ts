@@ -29,7 +29,7 @@ export class GameService {
     this.clients.push(id);
     if (!userDbId || !speed) {
       this.cheakIfInvited(client, id, speed);
-      return
+      return;
     }
     this.WaitInvite.push({ id: userDbId, client: client });
   }
@@ -46,7 +46,10 @@ export class GameService {
     }
   }
 
-  async saveGameRecord({ score: s1, socket: p1 }: UserData, { score: s2, socket: p2 }: UserData) {
+  async saveGameRecord(
+    { score: s1, socket: p1 }: UserData,
+    { score: s2, socket: p2 }: UserData,
+  ) {
     const pu1 = await this.validateJwtWbSocket(p1);
     const pu2 = await this.validateJwtWbSocket(p2);
     await this.userRepository.saveGameRecord(pu1, pu2, s1, s2);
@@ -59,9 +62,9 @@ export class GameService {
 
   onNewConnection(client: Socket, speed: string) {
     const match = this.queue.addClientToQueue(client, speed);
-    match.forEach(item => {
+    match.forEach((item) => {
       this.room.onNewMatch(item, speed);
-    })
+    });
   }
 
   cheakIfInvited(client: Socket, id: string, speed: string) {
@@ -70,19 +73,18 @@ export class GameService {
       p2: client,
     };
 
-    this.WaitInvite = this.WaitInvite.filter(item => {
+    this.WaitInvite = this.WaitInvite.filter((item) => {
       if (item.id === id) {
         pair.p1 = client;
         pair.p2 = item.client;
         return true;
       }
-    })
-    if (pair.p1.id !== pair.p2.id)
-      this.room.onNewMatch(pair, speed)
+    });
+    if (pair.p1.id !== pair.p2.id) this.room.onNewMatch(pair, speed);
   }
 
   disconnected(client: Socket, id: string) {
-    this.clients = this.clients.filter(item => item !== id);
+    this.clients = this.clients.filter((item) => item !== id);
     const res = this.room.onDisconnect(client);
     if (res) return;
     this.queue.quit(client);

@@ -25,13 +25,13 @@ jobs:
         run: |
           cd ./backend
           npm install
-      # disbaled for now
-      # - name: Run format check
-      #   run: |
-      #     cd ./backend
-      #     npm run format:check
+
+      - name: Run format check
+        run: |
+          cd ./backend
+          npm run format:check
       
-      # - name: Run lint check
-      #   run: |
-      #     cd ./backend
-      #     npm run lint:check
+      - name: Run lint check
+        run: |
+          cd ./backend
+          npm run lint:check

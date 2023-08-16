@@ -18,19 +18,17 @@ export default class QueueGameHandler {
     const lot: playerPair[] = [];
     while (this.pool[speed].length >= 2) {
       const match: playerPair = {
-      p1: this.pool[speed].shift(),
-      p2: this.pool[speed].shift(),
+        p1: this.pool[speed].shift(),
+        p2: this.pool[speed].shift(),
       };
-      lot.push(match)
+      lot.push(match);
     }
     return lot;
   }
 
   quit(client: Socket) {
-    for (let key in this.pool) {
-      this.pool[key] = this.pool[key].filter(
-        item => item !== client
-      )
+    for (const key in this.pool) {
+      this.pool[key] = this.pool[key].filter((item) => item !== client);
     }
   }
 }

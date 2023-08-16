@@ -50,4 +50,4 @@ export type RoomInfo = {
 export type inviteDbId = {
   id: string;
   client: Socket;
-}
+};
