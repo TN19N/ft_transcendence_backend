@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,7 +12,7 @@ import { authenticator } from 'otplib';
 import { UpdateProfileDto } from './dto';
 import { Prisma, User } from '@prisma/client';
 import * as fs from 'fs';
-import { UserGateway } from './user.gateway';
+import { GameSpeed, UserGateway } from './user.gateway';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,20 @@ export class UserService {
     private userRepository: UserRepository,
     private configurationService: ConfigurationService,
   ) {}
+
+  async sendGameInvite(userId: string, reciverId: string, speed: GameSpeed) {
+    const reciver = await this.userRepository.getUserById(reciverId);
+
+    if (reciver) {
+      if (await this.userRepository.getFriendship(userId, reciverId)) {
+        this.userGateway.sendGameInvite(reciverId, userId, speed);
+      } else {
+        throw new ForbiddenException("you can't send game invite to this user");
+      }
+    } else {
+      throw new NotFoundException('User to send to not found!');
+    }
+  }
 
   async unBanUser(userId: string, userToUnBanId: string) {
     if (!(await this.userRepository.getBan(userId, userToUnBanId))) {

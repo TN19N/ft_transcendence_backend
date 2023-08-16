@@ -36,6 +36,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { AchievementType, User } from '@prisma/client';
 import { Response } from 'express';
+import { GameSpeed } from './user.gateway';
 
 @Controller('v1/user')
 @ApiTags('v1/user')
@@ -46,7 +47,17 @@ export class UserController {
     private userService: UserService,
     private userRepository: UserRepository,
     private authenticationService: AuthenticationService,
-  ) {}
+  ) { }
+
+  @Post('sendGameInvite')
+  @HttpCode(HttpStatus.OK)
+  async sendGameInvite(
+    @GetUserId() userId: string,
+    @Query('reciverId', ParseUUIDPipe) reciverId: string,
+    @Query('speed', new ParseEnumPipe(GameSpeed)) speed: GameSpeed,
+  ) {
+    await this.userService.sendGameInvite(userId, reciverId, speed);
+  }
 
   @Get('achievement/:achievementType')
   @HttpCode(HttpStatus.OK)
@@ -289,7 +300,7 @@ export class TestController {
     private userService: UserService,
     private userRepository: UserRepository,
     private authenticationService: AuthenticationService,
-  ) {}
+  ) { }
 
   @Post('addRandomUser')
   @HttpCode(HttpStatus.CREATED)
@@ -308,8 +319,7 @@ export class TestController {
     if (user) {
       response.setHeader(
         'Set-Cookie',
-        `Authentication=${
-          (await this.authenticationService.generateLoginToken(user.id)).token
+        `Authentication=${(await this.authenticationService.generateLoginToken(user.id)).token
         }; Path=/`,
       );
     } else {

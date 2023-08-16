@@ -1,36 +1,36 @@
 import { Socket } from 'socket.io';
-import { gameQueue, playerPair } from './PongTypes';
+import { gameQeue, playerPair } from './PongTypes';
 
 export default class QueueGameHandler {
-  private pool: gameQueue;
+  private pool: gameQeue;
 
   constructor() {
     this.pool = {
-      Slow: null,
-      Medium: null,
-      Fast: null,
+      Slow: [],
+      Medium: [],
+      Fast: [],
     };
   }
 
-  addClientToQueue(client: Socket, speed: string): playerPair | null {
-    if (!this.pool[speed]) {
-      this.pool[speed] = client;
-      return null;
+  addClientToQueue(client: Socket, speed: string): playerPair[] | null {
+    this.pool[speed].push(client);
+    client.emit('delay', 'Wait for pair...');
+    const lot: playerPair[] = [];
+    while (this.pool[speed].length >= 2) {
+      const match: playerPair = {
+      p1: this.pool[speed].shift(),
+      p2: this.pool[speed].shift(),
+      };
+      lot.push(match)
     }
-    const match: playerPair = {
-      p1: this.pool[speed],
-      p2: client,
-    };
-    this.pool[speed] = null;
-    return match;
+    return lot;
   }
 
   quit(client: Socket) {
-    for (const key in this.pool) {
-      if (this.pool[key] && this.pool[key].id === client.id) {
-        this.pool[key] = null;
-        return;
-      }
+    for (let key in this.pool) {
+      this.pool[key] = this.pool[key].filter(
+        item => item !== client
+      )
     }
   }
 }
