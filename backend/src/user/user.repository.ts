@@ -526,33 +526,31 @@ export class UserRepository {
   }
 
   getUserWithNameStartingWith(userId: string, query: string) {
-    return this.databaseService.user.findMany({
+    return this.databaseService.profile.findMany({
       where: {
         id: { not: userId },
-        bannedUsers: {
-          none: {
-            bannedUserId: userId,
+        user: {
+          bannedUsers: {
+            none: {
+              bannedUserId: userId,
+            },
           },
-        },
-        bannedBy: {
-          none: {
-            userId: userId,
+          bannedBy: {
+            none: {
+              userId: userId,
+            },
           },
-        },
-        profile: {
-          name: {
-            startsWith: query,
+          profile: {
+            name: {
+              startsWith: query,
+            },
           },
         },
       },
       select: {
         id: true,
-        profile: {
-          select: {
-            name: true,
-            status: true,
-          },
-        },
+        name: true,
+        status: true,
       },
     });
   }
