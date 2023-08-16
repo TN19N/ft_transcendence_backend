@@ -126,9 +126,8 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
       ?.split('=')[1];
 
     if (jwtToken) {
-      const payload: JwtPayload = await this.authenticationService.validateJwt(
-        jwtToken,
-      );
+      const payload: JwtPayload =
+        await this.authenticationService.validateJwt(jwtToken);
 
       if (payload && payload.tfa == false) {
         return (await this.userRepository.getUserById(payload.sub))?.id;

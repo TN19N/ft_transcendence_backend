@@ -81,9 +81,8 @@ export class AuthenticationService {
 
   async validateIntra42User(profile: any): Promise<User> {
     const intra42Id: number = parseInt(profile.id);
-    let user: User | null = await this.userRepository.getUserByIntra42Id(
-      intra42Id,
-    );
+    let user: User | null =
+      await this.userRepository.getUserByIntra42Id(intra42Id);
 
     if (!user) {
       user = await this.createNewUser(
