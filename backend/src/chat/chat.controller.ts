@@ -216,8 +216,8 @@ export class ChatController {
 
   @Get('group/search')
   @HttpCode(HttpStatus.OK)
-  @ApiQuery({ name: "query", required: false })
-  searchGroup( 
+  @ApiQuery({ name: 'query', required: false })
+  searchGroup(
     @GetUserId() userId: string,
     @Query('query', new DefaultValuePipe('')) query: string,
   ) {
