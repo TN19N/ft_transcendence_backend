@@ -376,26 +376,14 @@ export class UserRepository {
   }
 
   getFriends(userId: string) {
-    return this.databaseService.user
-      .findUnique({
-        where: { id: userId },
-        select: { friends: true },
-      })
-      .friends({
-        select: {
-          friend: {
-            select: {
-              profile: {
-                select: {
-                  id: true,
-                  name: true,
-                  status: true,
-                },
-              },
-            },
-          },
-        },
-      });
+    return this.databaseService.profile.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+      },
+    });
   }
 
   getUserByGoogleId(googleId: string): Promise<User | null> {

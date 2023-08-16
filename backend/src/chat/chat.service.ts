@@ -375,10 +375,10 @@ export class ChatService {
     this.chatGateway.sendDmMessage(senderId, receiverId, content);
   }
 
-  async getDms(userId: string): Promise<MessageDm[]> {
-    const messages: MessageDm[] = await this.chatRepository.getDms(userId);
+  async getDms(userId: string) {
+    const messages = await this.chatRepository.getDms(userId);
 
-    const messagesFiltered: MessageDm[] = [];
+    const messagesFiltered = [];
     const dmPast: Set<string> = new Set();
 
     for (const message of messages) {
@@ -387,7 +387,12 @@ export class ChatService {
       if (!dmPast.has(uniqueKey)) {
         dmPast.add(uniqueKey);
         dmPast.add([...uniqueKey].reverse().join(''));
-        messagesFiltered.push(message);
+        messagesFiltered.push({
+          createAt: message.createdAt,
+          senderId: message.senderId,
+          senderName: message.sender.profile.name,
+          message: message.message,
+        });
       }
     }
 

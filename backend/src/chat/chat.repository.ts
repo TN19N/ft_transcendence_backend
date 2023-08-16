@@ -287,6 +287,21 @@ export class ChatRepository {
       where: {
         OR: [{ senderId: userId }, { receiverId: userId }],
       },
+      select: {
+        createdAt: true,
+        senderId: true,
+        receiverId: true,
+        message: true,
+        sender: {
+          select: {
+            profile: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
