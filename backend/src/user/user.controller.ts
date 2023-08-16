@@ -49,6 +49,25 @@ export class UserController {
     private authenticationService: AuthenticationService,
   ) {}
 
+  @Get('isFriend')
+  @HttpCode(HttpStatus.OK)
+  async isFriend(
+    @GetUserId() userId: string,
+    @Query('otherId', ParseUUIDPipe) otherId: string,
+  ) {
+    const otherUser = await this.userRepository.getUserById(otherId);
+
+    if (otherUser) {
+      if (await this.userRepository.getFriendship(userId, otherId)) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      throw new NotFoundException('user not found');
+    }
+  }
+
   @Post('sendGameInvite')
   @HttpCode(HttpStatus.OK)
   async sendGameInvite(
