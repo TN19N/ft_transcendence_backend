@@ -1,4 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { AbstractStrategy } from '@nestjs/passport';
 import {
   AchievementType,
   Ban,
@@ -113,6 +114,28 @@ export class UserRepository {
     return this.databaseService.groupInvite.findMany({
       where: { receiverId: userId },
     });
+  }
+
+  async deleteGroupInvite(userId: string, groupId: string) {
+    await this.databaseService.groupInvite.delete({
+      where: {
+        GroupInviteId: {
+          receiverId: userId,
+          groupId: groupId,
+        }
+      }
+    })
+  }
+
+  getGroupInvite(userId: string, groupId: string) {
+    return this.databaseService.groupInvite.findUnique({
+      where: {
+        GroupInviteId: {
+          receiverId: userId,
+          groupId: groupId,
+        }
+      }
+    })
   }
 
   async unBanUserFromGroup(userToUnBanId: string, groupId: string) {
@@ -282,6 +305,17 @@ export class UserRepository {
         },
       },
     });
+  }
+
+  async deletFriendRequest(senderId: string, receiverId: string) {
+    await this.databaseService.friendRequest.delete({
+      where: {
+        FriendRequestId: {
+          senderId: senderId,
+          receiverId: receiverId,
+        }
+      }
+    })
   }
 
   createFriendRequest(

@@ -49,6 +49,7 @@ export class UserController {
     private authenticationService: AuthenticationService,
   ) { }
 
+
   @Post('sendGameInvite')
   @HttpCode(HttpStatus.OK)
   async sendGameInvite(
@@ -82,7 +83,7 @@ export class UserController {
   }
 
   @Delete('unBan')
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.ACCEPTED)
   async unBanUser(
     @GetUserId() userId: string,
     @Query('userToUnBanId', ParseUUIDPipe) userToUnBanId: string,
@@ -103,6 +104,15 @@ export class UserController {
     @Query('userToFriendId', ParseUUIDPipe) userToFriendId: string,
   ) {
     await this.userService.acceptFriendRequest(userId, userToFriendId);
+  }
+
+  @Delete('friendRequest')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async removefriendRequest(
+    @GetUserId() userId: string,
+    @Query('senderId', ParseUUIDPipe) senderId: string,
+  ) {
+    await this.userService.removeFriendRequest(userId, senderId);
   }
 
   @Post('friendRequest')
@@ -172,6 +182,21 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async getGroupInvites(@GetUserId() userId: string) {
     return await this.userRepository.getGroupInvites(userId);
+  }
+
+  @Delete('group/invite')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async removeGroupInvite(
+    @GetUserId() userId: string,
+    @Query('groupId', ParseUUIDPipe) groupId: string,
+  ) {
+    const groupInvite = await this.userRepository.getGroupInvite(userId, groupId);
+
+    if (groupInvite) {
+      await this.userRepository.deleteGroupInvite(userId, groupId);
+    } else {
+      throw new NotFoundException('group invite not found');
+    }
   }
 
   @Get('profile')
