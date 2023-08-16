@@ -11,6 +11,12 @@ import { JwtPayload } from 'src/authentication/interface';
 import { UserRepository } from './user.repository';
 import { Status } from '@prisma/client';
 
+export enum GameSpeed {
+  SLOW = 'SLOW',
+  MEDIUM = 'MEDIUM',
+  FAST = 'FAST',
+}
+
 enum NotificationType {
   FRIEND_REQUEST = 'FRIEND_REQUEST',
   GROUP_INVITE = 'GROUP_INVITE',
@@ -73,13 +79,14 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  sendGameInvite(receiverId: string, senderId: string) {
+  sendGameInvite(receiverId: string, senderId: string, speed: GameSpeed) {
     if (this.connectedUsers.has(receiverId)) {
       this.connectedUsers.get(receiverId).forEach((socket) => {
         socket.emit('notification', {
           type: NotificationType.GAME_INVITE,
           payload: {
             senderId: senderId,
+            speed: speed,
           },
         });
       });

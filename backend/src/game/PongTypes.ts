@@ -1,9 +1,9 @@
 import { Socket } from 'socket.io';
 
-export type gameQueue = {
-  Slow: Socket | null;
-  Medium: Socket | null;
-  Fast: Socket | null;
+export type gameQeue = {
+  Slow: Socket[];
+  Medium: Socket[];
+  Fast: Socket[];
 };
 
 export type playerPair = {
@@ -36,6 +36,8 @@ export type Room = {
   revX: number;
   interval: number;
   speed: number;
+  timer: number;
+  delay: number;
 };
 
 export type RoomInfo = {
@@ -44,3 +46,8 @@ export type RoomInfo = {
   this: UserData;
   other: UserData;
 };
+
+export type inviteDbId = {
+  id: string;
+  client: Socket;
+}

@@ -11,6 +11,7 @@ import { AuthenticationService } from 'src/authentication/authentication.service
 import { JwtPayload } from 'src/authentication/interface';
 import { UserRepository } from 'src/user/user.repository';
 import { UnauthorizedException } from '@nestjs/common';
+import { Status } from '@prisma/client';
 
 @WebSocketGateway({
   cors: process.env.FRONTEND_URL,
@@ -24,15 +25,23 @@ export class GameGateway implements OnGatewayDisconnect {
     private userRepository: UserRepository,
   ) {}
 
-  async handleConnection(socket: Socket) {
-    const userId = await this.validateJwtWbSocket(socket);
+  async handleConnection(client: Socket) {
+    const id = await this.validateJwtWbSocket(client);
 
-    if (!userId) {
-      return this.disconnect(socket);
+    if (!id) {
+      this.disconnect(client);
     }
+
+    await this.userRepository.updateProfile(id, {
+      status: Status.PLAYING,
+    });
+
+    const userId = client.handshake.query.userId as string;
+    const speed = client.handshake.query.speed as string;
+    this.gameService.onRowConnection(client, userId, id, speed);
   }
 
-  @SubscribeMessage('key-pressed') // Get pressed key from client
+  @SubscribeMessage('key-pressed')
   onKeyPressedHandlerpad(
     @MessageBody() pressedKey: string,
     @ConnectedSocket() client: Socket,
@@ -40,7 +49,7 @@ export class GameGateway implements OnGatewayDisconnect {
     this.gameService.onKeyPressed(client, pressedKey);
   }
 
-  @SubscribeMessage('game-speed') // Get speed from client
+  @SubscribeMessage('game-speed')
   clientSpeedHandler(
     @ConnectedSocket() client: Socket,
     @MessageBody() speed: string,
@@ -48,12 +57,17 @@ export class GameGateway implements OnGatewayDisconnect {
     this.gameService.onNewConnection(client, speed);
   }
 
-  // onDisconnected
-  handleDisconnect(client: Socket) {
-    this.gameService.disconnected(client);
+  async handleDisconnect(client: Socket) {
+    const userId = await this.validateJwtWbSocket(client);
+
+    await this.userRepository.updateProfile(userId, {
+      status: Status.ONLINE,
+    });
+
+    this.gameService.disconnected(client, userId);
   }
 
-  private async validateJwtWbSocket(socket: Socket): Promise<string | null> {
+  async validateJwtWbSocket(socket: Socket): Promise<string | null> {
     const jwtToken = socket.handshake.headers.cookie
       ?.split(';')
       .find((cookie: string) => cookie.startsWith('Authentication='))

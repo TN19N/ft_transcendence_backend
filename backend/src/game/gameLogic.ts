@@ -2,21 +2,21 @@ import { BallData, Room, UserData } from './PongTypes';
 import { calcAngle, mapRange } from './gameLogicUtils';
 import { emitScore, resetGame } from './roomUtils';
 
-const TABLE_WIDTH = 100;
+const TABLE_WIDGTH = 100;
 const TABLE_HEIGHT = 100;
 const SPEED_PADDLE = 3;
-const PADDLE_MARGIN = 1.5;
+const PADDEL_MARGING = 1.5;
 const PADDLE_HEIGHT = 16.7;
 const BALL_RADIUS = 2.1;
 
-const paddleCollusion = (room: Room) => {
+const paddelCollusion = (room: Room) => {
   // check if in paddle range
   let pos;
-  if (room.ball.x < PADDLE_MARGIN) {
+  if (room.ball.x < PADDEL_MARGING) {
     const data = ballInPaddle(room.ball.y, room.p1.y);
     if (data) pos = calcAngle(room, data.Ball, data.paddle);
   }
-  if (room.ball.x > TABLE_WIDTH - PADDLE_MARGIN) {
+  if (room.ball.x > TABLE_WIDGTH - PADDEL_MARGING) {
     const data = ballInPaddle(room.ball.y, room.p2.y);
     if (data) pos = calcAngle(room, data.Ball, data.paddle);
   }
@@ -30,8 +30,8 @@ const wallCollusion = (ball: BallData) => {
 };
 
 export const keyPressed = (key: string, player: UserData) => {
-  if (key === 'up' && player.y > 0) return -SPEED_PADDLE;
-  if (key === 'down' && player.y < 100) return SPEED_PADDLE;
+  if (key === 'up' && player.y > 0) return -(SPEED_PADDLE + (SPEED_PADDLE / 1.5));
+  if (key === 'down' && player.y < 100) return (SPEED_PADDLE + (SPEED_PADDLE / 1.5));
   return;
 };
 
@@ -39,17 +39,17 @@ const ballInPaddle = (ball: number, paddle: number) => {
   const bottomPaddlePosition = mapRange(
     paddle + PADDLE_HEIGHT,
     PADDLE_HEIGHT + BALL_RADIUS / 2,
-    TABLE_WIDTH + PADDLE_HEIGHT,
+    TABLE_WIDGTH + PADDLE_HEIGHT,
     PADDLE_HEIGHT,
-    TABLE_WIDTH,
+    TABLE_WIDGTH,
   );
 
   const topPaddlePosition = mapRange(
     paddle - BALL_RADIUS,
     0,
-    TABLE_WIDTH,
+    TABLE_WIDGTH,
     -BALL_RADIUS,
-    TABLE_WIDTH - PADDLE_HEIGHT,
+    TABLE_WIDGTH - PADDLE_HEIGHT,
   );
 
   const ballPosition = Math.floor(ball);
@@ -84,18 +84,24 @@ export const nextFrame = (room: Room) => {
     return;
   }
 
-  const angel = paddleCollusion(room);
+  const angel = paddelCollusion(room);
   if (angel) {
     room.ball.vx = angel.x;
     room.ball.vy = angel.y;
   }
 
   if (wallCollusion(room.ball)) room.ball.vy *= -1;
-
+  // TORM: splite to test every paddle
+  // if (room.ball.x < TABLE_WIDGTH / 2 - 1) room.ball.vx *= -1;
+  // if (room.ball.x > TABLE_WIDGTH / 2 + 1) room.ball.vx *= -1;
   const data = {
     x: room.ball.x + room.ball.vx,
     y: room.ball.y + room.ball.vy,
   };
+
+  // TORM  : auto -------------------------------------------
+  // autoGame(room);
+  // --------------------------------------------------------
 
   room.p1.socket.emit('next-frame', data);
   room.revX -= room.ball.vx;
