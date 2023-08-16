@@ -1,5 +1,4 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { AbstractStrategy } from '@nestjs/passport';
 import {
   AchievementType,
   Ban,
@@ -122,9 +121,9 @@ export class UserRepository {
         GroupInviteId: {
           receiverId: userId,
           groupId: groupId,
-        }
-      }
-    })
+        },
+      },
+    });
   }
 
   getGroupInvite(userId: string, groupId: string) {
@@ -133,9 +132,9 @@ export class UserRepository {
         GroupInviteId: {
           receiverId: userId,
           groupId: groupId,
-        }
-      }
-    })
+        },
+      },
+    });
   }
 
   async unBanUserFromGroup(userToUnBanId: string, groupId: string) {
@@ -170,7 +169,16 @@ export class UserRepository {
       .findUnique({
         where: { id: userId },
         select: {
-          bannedUsers: true,
+          bannedUsers: {
+            select: {
+              bannedUserId: true,
+              bannedUser: {
+                select: {
+                  profile: true,
+                },
+              },
+            },
+          },
         },
       })
       .bannedUsers();
@@ -313,9 +321,9 @@ export class UserRepository {
         FriendRequestId: {
           senderId: senderId,
           receiverId: receiverId,
-        }
-      }
-    })
+        },
+      },
+    });
   }
 
   createFriendRequest(

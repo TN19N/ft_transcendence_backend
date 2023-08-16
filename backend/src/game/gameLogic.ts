@@ -30,8 +30,9 @@ const wallCollusion = (ball: BallData) => {
 };
 
 export const keyPressed = (key: string, player: UserData) => {
-  if (key === 'up' && player.y > 0) return -(SPEED_PADDLE + (SPEED_PADDLE / 1.5));
-  if (key === 'down' && player.y < 100) return (SPEED_PADDLE + (SPEED_PADDLE / 1.5));
+  if (key === 'up' && player.y > 0) return -(SPEED_PADDLE + SPEED_PADDLE / 1.5);
+  if (key === 'down' && player.y < 100)
+    return SPEED_PADDLE + SPEED_PADDLE / 1.5;
   return;
 };
 

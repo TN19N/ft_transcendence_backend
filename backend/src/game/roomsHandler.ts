@@ -20,30 +20,31 @@ export default class RoomsGameHandler {
     this.Rooms.push(room);
     const scoreGole = 5;
 
-    room.interval = setInterval( (_) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    room.interval = setInterval((_) => {
       if (room.timer <= 120) {
         if (!(room.timer % 40)) {
           if (room.delay) {
-            clients.p1.emit('delay', room.delay)
-            clients.p2.emit('delay', room.delay)
-            room.delay -= 1
+            clients.p1.emit('delay', room.delay);
+            clients.p2.emit('delay', room.delay);
+            room.delay -= 1;
           }
         }
-        
-        room.timer +=1
-        if (room.timer == 120) {
-        clients.p1.emit('delay', '-')
-        clients.p2.emit('delay', '-')
-      }
 
-        return
+        room.timer += 1;
+        if (room.timer == 120) {
+          clients.p1.emit('delay', '-');
+          clients.p2.emit('delay', '-');
+        }
+
+        return;
       }
       const newPos = nextFrame(room);
       if (newPos) {
         [room.ball.x, room.ball.y] = newPos;
       } else {
         if (room.p1.score === scoreGole || room.p2.score === scoreGole)
-          this.endGame(room)
+          this.endGame(room);
       }
     }, GAME_INTERVAL);
   }
@@ -85,11 +86,11 @@ export default class RoomsGameHandler {
 
   onKeyPressed(client: Socket, key: string) {
     const roomRef = this.getRoomByClient(client);
-    if (!roomRef)return
+    if (!roomRef) return;
     const val = keyPressed(key, roomRef.this);
 
     if (val) {
-      roomRef.this.y += val ;
+      roomRef.this.y += val;
       if (roomRef.this.y > 100) roomRef.this.y = 100;
       if (roomRef.this.y < 0) roomRef.this.y = 0;
       roomRef.this.socket.emit('my-position', roomRef.this.y);
@@ -105,7 +106,7 @@ export default class RoomsGameHandler {
     this.gameService.saveGameRecord(p1, p2);
     const oClinet = p2;
     if (room.interval) clearInterval(room.interval);
-    this.Rooms = this.Rooms.filter(item => item !== room)
+    this.Rooms = this.Rooms.filter((item) => item !== room);
     oClinet.socket.emit('delay', 'You win');
     oClinet.socket.disconnect(true);
     return true;

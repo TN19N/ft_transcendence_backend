@@ -47,8 +47,7 @@ export class UserController {
     private userService: UserService,
     private userRepository: UserRepository,
     private authenticationService: AuthenticationService,
-  ) { }
-
+  ) {}
 
   @Post('sendGameInvite')
   @HttpCode(HttpStatus.OK)
@@ -190,7 +189,10 @@ export class UserController {
     @GetUserId() userId: string,
     @Query('groupId', ParseUUIDPipe) groupId: string,
   ) {
-    const groupInvite = await this.userRepository.getGroupInvite(userId, groupId);
+    const groupInvite = await this.userRepository.getGroupInvite(
+      userId,
+      groupId,
+    );
 
     if (groupInvite) {
       await this.userRepository.deleteGroupInvite(userId, groupId);
@@ -325,7 +327,7 @@ export class TestController {
     private userService: UserService,
     private userRepository: UserRepository,
     private authenticationService: AuthenticationService,
-  ) { }
+  ) {}
 
   @Post('addRandomUser')
   @HttpCode(HttpStatus.CREATED)
@@ -344,7 +346,8 @@ export class TestController {
     if (user) {
       response.setHeader(
         'Set-Cookie',
-        `Authentication=${(await this.authenticationService.generateLoginToken(user.id)).token
+        `Authentication=${
+          (await this.authenticationService.generateLoginToken(user.id)).token
         }; Path=/`,
       );
     } else {
