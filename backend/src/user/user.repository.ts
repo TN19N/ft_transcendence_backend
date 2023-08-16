@@ -376,7 +376,7 @@ export class UserRepository {
   }
 
   getFriends(userId: string) {
-    return this.databaseService.profile.findUnique({
+    return this.databaseService.profile.findMany({
       where: { id: userId },
       select: {
         id: true,

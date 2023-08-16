@@ -301,6 +301,15 @@ export class ChatRepository {
             },
           },
         },
+        receiver: {
+          select: {
+            profile: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

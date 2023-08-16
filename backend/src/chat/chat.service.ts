@@ -389,8 +389,12 @@ export class ChatService {
         dmPast.add([...uniqueKey].reverse().join(''));
         messagesFiltered.push({
           createAt: message.createdAt,
-          senderId: message.senderId,
-          senderName: message.sender.profile.name,
+          otherId:
+            message.senderId == userId ? message.receiverId : message.senderId,
+          name:
+            message.senderId == userId
+              ? message.receiver.profile.name
+              : message.sender.profile.name,
           message: message.message,
         });
       }
