@@ -231,6 +231,7 @@ export class UserController {
 
   @Get('search')
   @HttpCode(HttpStatus.OK)
+  @ApiQuery({ name: "query", required: false })
   async search(
     @GetUserId() userId: string,
     @Query('query', new DefaultValuePipe('')) query: string,

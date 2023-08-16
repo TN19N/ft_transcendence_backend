@@ -13,7 +13,7 @@ import {
   Delete,
   Patch,
 } from '@nestjs/common';
-import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { GetUserId } from 'src/authentication/decorator';
 import { ChatService } from './chat.service';
 import {
@@ -216,7 +216,8 @@ export class ChatController {
 
   @Get('group/search')
   @HttpCode(HttpStatus.OK)
-  searchGroup(
+  @ApiQuery({ name: "query", required: false })
+  searchGroup( 
     @GetUserId() userId: string,
     @Query('query', new DefaultValuePipe('')) query: string,
   ) {
