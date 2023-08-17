@@ -214,14 +214,20 @@ export class ChatController {
     await this.chatService.createGroup(userId, createGroupDto);
   }
 
+  @Get('group/joined')
+  @HttpCode(HttpStatus.OK)
+  async getJoinedGroups(@GetUserId() userId: string) {
+    return await this.chatRepository.getJoinedGroups(userId);
+  }
+
   @Get('group/search')
   @HttpCode(HttpStatus.OK)
   @ApiQuery({ name: 'query', required: false })
-  searchGroup(
+  async searchGroup(
     @GetUserId() userId: string,
     @Query('query', new DefaultValuePipe('')) query: string,
   ) {
-    return this.chatRepository.getGroupWithNameStartWith(userId, query);
+    return await this.chatRepository.getGroupWithNameStartWith(userId, query);
   }
 
   @Post('message')
