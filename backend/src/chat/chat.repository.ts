@@ -207,6 +207,31 @@ export class ChatRepository {
     });
   }
 
+  getJoinedGroups(userId: string) {
+    return this.databaseService.group.findMany({
+      where: {
+        members: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      include: {
+        messages: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+          select: {
+            createdAt: true,
+            senderId: true,
+            message: true,
+          },
+        },
+      },
+    });
+  }
+
   getGroupWithNameStartWith(userId: string, query: string) {
     return this.databaseService.group.findMany({
       where: {
