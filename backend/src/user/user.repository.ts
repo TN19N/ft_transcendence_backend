@@ -164,24 +164,22 @@ export class UserRepository {
     });
   }
 
-  getBanedUsers(userId: string): Promise<Ban[]> {
-    return this.databaseService.user
-      .findUnique({
-        where: { id: userId },
-        select: {
-          bannedUsers: {
-            select: {
-              bannedUserId: true,
-              bannedUser: {
-                select: {
-                  profile: true,
-                },
-              },
+  getBanedUsers(userId: string) {
+    return this.databaseService.profile.findMany({
+      where: {
+        user: {
+          bannedBy: {
+            some: {
+              userId: userId,
             },
           },
         },
-      })
-      .bannedUsers();
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
   }
 
   async deleteBan(userId: string, userToUnBanId: string) {
