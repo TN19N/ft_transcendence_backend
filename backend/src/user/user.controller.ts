@@ -133,6 +133,19 @@ export class UserController {
     await this.userService.removeFriendRequest(userId, senderId);
   }
 
+  @Delete('removeFriend')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeFriend(
+    @GetUserId() userId: string,
+    @Query('friendId', ParseUUIDPipe) friendId: string,
+  ) {
+    if (await this.userRepository.getFriendship(userId, friendId)) {
+      await this.userRepository.deleteFriendship(userId, friendId);
+    } else {
+      throw new NotFoundException('friend not found');
+    }
+  }
+
   @Post('friendRequest')
   @HttpCode(HttpStatus.CREATED)
   async sendFriendRequest(
