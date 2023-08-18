@@ -164,6 +164,35 @@ export class UserRepository {
     });
   }
 
+  async deleteFriendship(userId: string, friendId: string) {
+    await this.databaseService.$transaction(async (prisma: PrismaClient) => {
+      await prisma.friendship.deleteMany({
+        where: {
+          OR: [
+            {
+              userId: userId,
+              friendId: friendId,
+            },
+            {
+              userId: friendId,
+              friendId: userId,
+            },
+          ],
+        },
+      });
+
+      await prisma.profile.update({
+        where: { id: userId },
+        data: { friendsNumber: { decrement: 1 } },
+      });
+
+      await prisma.profile.update({
+        where: { id: friendId },
+        data: { friendsNumber: { decrement: 1 } },
+      });
+    });
+  }
+
   getBanedUsers(userId: string) {
     return this.databaseService.profile.findMany({
       where: {
