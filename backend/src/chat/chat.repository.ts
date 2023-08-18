@@ -211,16 +211,12 @@ export class ChatRepository {
     return this.databaseService.group.findMany({
       where: {
         members: {
-          some: {
-            userId: userId,
-          },
+          some: { userId: userId },
         },
       },
       include: {
         messages: {
-          orderBy: {
-            createdAt: 'desc',
-          },
+          orderBy: { createdAt: 'desc' },
           take: 1,
           select: {
             createdAt: true,
