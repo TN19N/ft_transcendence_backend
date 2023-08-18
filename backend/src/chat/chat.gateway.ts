@@ -62,7 +62,7 @@ export class ChatGateway {
   }
 
   sendDmMessage(senderId: string, receiverId: string, message: string) {
-    if (this.connectedUsers.has(receiverId)) {
+    if (senderId != receiverId && this.connectedUsers.has(receiverId)) {
       this.connectedUsers.get(receiverId).forEach((socket) => {
         socket.emit('message', {
           type: MessageType.DM,
@@ -82,7 +82,7 @@ export class ChatGateway {
     message: string,
   ) {
     for (const member of members) {
-      if (this.connectedUsers.has(member.userId)) {
+      if (senderId != member.userId && this.connectedUsers.has(member.userId)) {
         this.connectedUsers.get(member.userId).forEach((socket) => {
           socket.emit('message', {
             type: MessageType.GROUP,
