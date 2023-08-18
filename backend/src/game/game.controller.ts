@@ -30,9 +30,17 @@ export class GameController {
     const user = await this.userRepository.getUserById(id ?? userId);
 
     if (user) {
-      return await this.gameRepository.getRecord(user.id);
+      return (await this.gameRepository.getRecord(user.id)).map((record) => {
+        return {
+          ...record,
+          userName: record.user.profile.name,
+          opponentName: record.opponent.profile.name,
+          user: undefined,
+          opponent: undefined,
+        };
+      });
     } else {
-      throw new NotFoundException(`User not found`);
+      throw new NotFoundException('User not found');
     }
   }
 }
