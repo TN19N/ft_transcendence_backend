@@ -386,7 +386,7 @@ export class ChatService {
 
       if (!dmPast.has(uniqueKey)) {
         dmPast.add(uniqueKey);
-        dmPast.add([...uniqueKey].reverse().join(''));
+        dmPast.add(`${message.receiverId}|${message.senderId}`);
         messagesFiltered.push({
           createAt: message.createdAt,
           otherId:
