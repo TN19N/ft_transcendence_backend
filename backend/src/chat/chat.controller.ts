@@ -220,7 +220,7 @@ export class ChatController {
     return (await this.chatRepository.getJoinedGroups(userId)).map((group) => {
       return {
         ...group,
-        message: group.messages[0]?.message,
+        message: group.messages[0]?.message ?? '',
         messages: undefined,
       };
     });
