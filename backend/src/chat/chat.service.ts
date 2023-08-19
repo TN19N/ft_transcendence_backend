@@ -389,7 +389,7 @@ export class ChatService {
         dmPast.add(`${message.receiverId}|${message.senderId}`);
         messagesFiltered.push({
           createAt: message.createdAt,
-          otherId:
+          id:
             message.senderId == userId ? message.receiverId : message.senderId,
           name:
             message.senderId == userId
