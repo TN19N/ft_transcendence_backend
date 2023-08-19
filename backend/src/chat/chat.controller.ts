@@ -217,7 +217,13 @@ export class ChatController {
   @Get('group/joined')
   @HttpCode(HttpStatus.OK)
   async getJoinedGroups(@GetUserId() userId: string) {
-    return await this.chatRepository.getJoinedGroups(userId);
+    return (await this.chatRepository.getJoinedGroups(userId)).map((group) => {
+      return {
+        ...group,
+        message: group.messages[0]?.message,
+        messages: undefined,
+      };
+    });
   }
 
   @Get('group/search')
