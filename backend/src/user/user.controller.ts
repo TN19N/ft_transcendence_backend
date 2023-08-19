@@ -49,6 +49,25 @@ export class UserController {
     private authenticationService: AuthenticationService,
   ) {}
 
+  @Get('isFriendRequestSent')
+  @HttpCode(HttpStatus.OK)
+  async isfriendRequestSent(
+    @GetUserId() userId: string,
+    @Query('otherId', ParseUUIDPipe) otherId: string,
+  ) {
+    const otherUser = await this.userRepository.getUserById(otherId);
+
+    if (otherUser) {
+      if (await this.userRepository.getFriendRequest(userId, otherId)) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      throw new NotFoundException('user not found');
+    }
+  }
+
   @Get('isFriend')
   @HttpCode(HttpStatus.OK)
   async isFriend(
