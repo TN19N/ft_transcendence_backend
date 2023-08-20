@@ -191,6 +191,17 @@ export class ChatRepository {
   getGroupMessages(groupId: string) {
     return this.databaseService.messageGroup.findMany({
       where: { groupId: groupId },
+      include: {
+        sender: {
+          select: {
+            profile: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
   }
 

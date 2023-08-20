@@ -192,7 +192,15 @@ export class ChatController {
   @HttpCode(HttpStatus.OK)
   @Roles(Role.MEMBER_MUTED)
   async getGroup(@Param('groupId', ParseUUIDPipe) groupId: string) {
-    return this.chatRepository.getGroupMessages(groupId);
+    return (await this.chatRepository.getGroupMessages(groupId)).map(
+      (message) => {
+        return {
+          ...message,
+          senderName: message.sender.profile.name,
+          sender: undefined,
+        };
+      },
+    );
   }
 
   @Post('group/:groupId/join')
