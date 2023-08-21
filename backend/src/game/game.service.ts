@@ -4,9 +4,7 @@ import { Socket } from 'socket.io';
 import RoomsGameHandler from './roomsHandler';
 import { UserRepository } from 'src/user/user.repository';
 import { AchievementType } from '@prisma/client';
-import { UserData, inviteDbId, playerPair } from './PongTypes';
-import { AuthenticationService } from 'src/authentication/authentication.service';
-import { JwtPayload } from 'src/authentication/interface';
+import { Room, UserData, inviteDbId, playerPair } from './PongTypes';
 
 @Injectable()
 export class GameService {
@@ -15,10 +13,7 @@ export class GameService {
   private clients: string[];
   private WaitInvite: inviteDbId[];
 
-  constructor(
-    private userRepository: UserRepository,
-    private authenticationService: AuthenticationService,
-  ) {
+  constructor(private userRepository: UserRepository) {
     this.queue = new QueueGameHandler();
     this.room = new RoomsGameHandler();
     this.clients = [];
@@ -27,11 +22,16 @@ export class GameService {
 
   onRowConnection(client: Socket, userDbId: string, id: string, speed: string) {
     this.clients.push(id);
-    if (!userDbId || !speed) {
-      this.cheakIfInvited(client, id, speed);
+    if (!userDbId && !speed) {
+      this.cheakIfInvited(client, id);
       return;
     }
-    this.WaitInvite.push({ id: userDbId, client: client });
+    this.WaitInvite.push({
+      id: userDbId,
+      id2: id,
+      client: client,
+      speed: speed,
+    });
   }
 
   private async saveAchievements(id: string) {
@@ -46,65 +46,55 @@ export class GameService {
     }
   }
 
-  async saveGameRecord(
-    { score: s1, socket: p1 }: UserData,
-    { score: s2, socket: p2 }: UserData,
+  private async saveGameRecord(
+    { score: s1, id: id1 }: UserData,
+    { score: s2, id: id2 }: UserData,
   ) {
-    const pu1 = await this.validateJwtWbSocket(p1);
-    const pu2 = await this.validateJwtWbSocket(p2);
-    await this.userRepository.saveGameRecord(pu1, pu2, s1, s2);
-    await this.saveAchievements(s1 > s2 ? pu1 : pu2);
+    await this.userRepository.saveGameRecord(id1, id2, s1, s2);
+    await this.saveAchievements(s1 > s2 ? id1 : id2);
   }
 
   onKeyPressed(client: Socket, key: string) {
     this.room.onKeyPressed(client, key);
   }
 
-  onNewConnection(client: Socket, speed: string) {
-    const match = this.queue.addClientToQueue(client, speed);
+  onNewConnection(client: Socket, id: string, speed: string) {
+    const match = this.queue.addClientToQueue(client, id, speed);
     match.forEach((item) => {
       this.room.onNewMatch(item, speed);
     });
   }
 
-  cheakIfInvited(client: Socket, id: string, speed: string) {
+  cheakIfInvited(client: Socket, id: string) {
     const pair: playerPair = {
       p1: client,
       p2: client,
+      pu1: id,
+      pu2: id,
     };
+    let speed: string | null = null;
 
     this.WaitInvite = this.WaitInvite.filter((item) => {
       if (item.id === id) {
-        pair.p1 = client;
         pair.p2 = item.client;
-        return true;
+        pair.pu2 = item.id2;
+        speed = item.speed;
+        return false;
       }
     });
-    if (pair.p1.id !== pair.p2.id) this.room.onNewMatch(pair, speed);
-  }
 
-  disconnected(client: Socket, id: string) {
-    this.clients = this.clients.filter((item) => item !== id);
-    const res = this.room.onDisconnect(client);
-    if (res) return;
-    this.queue.quit(client);
-  }
-
-  async validateJwtWbSocket(socket: Socket): Promise<string | null> {
-    const jwtToken = socket.handshake.headers.cookie
-      ?.split(';')
-      .find((cookie: string) => cookie.startsWith('Authentication='))
-      ?.split('=')[1];
-
-    if (jwtToken) {
-      const payload: JwtPayload =
-        await this.authenticationService.validateJwt(jwtToken);
-
-      if (payload && payload.tfa == false) {
-        return (await this.userRepository.getUserById(payload.sub))?.id;
-      }
+    if (speed) {
+      this.room.onNewMatch(pair, speed);
     }
+  }
 
-    return null;
+  async disconnected(client: Socket, id: string) {
+    this.clients = this.clients.filter((item) => item !== id);
+    const res: Room = await this.room.onDisconnect(client);
+    if (res) {
+      await this.saveGameRecord(res.p1, res.p2);
+      return;
+    }
+    this.queue.quit(client);
   }
 }

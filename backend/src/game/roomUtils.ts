@@ -14,11 +14,13 @@ export const initRoom = (clients: playerPair, speed: string): Room => {
       socket: clients.p1,
       score: 0,
       y: DEFAULT_SIZE,
+      id: clients.pu1,
     },
     p2: {
       socket: clients.p2,
       score: 0,
       y: DEFAULT_SIZE,
+      id: clients.pu2,
     },
     ball: {
       x: DEFAULT_SIZE,

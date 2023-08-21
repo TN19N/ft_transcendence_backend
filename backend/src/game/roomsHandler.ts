@@ -2,7 +2,6 @@ import { Room, playerPair } from './PongTypes';
 import { keyPressed, nextFrame } from './gameLogic';
 import { initRoom } from './roomUtils';
 import { Socket } from 'socket.io';
-import { GameService } from './game.service';
 
 const FPS = 60;
 
@@ -11,7 +10,7 @@ const GAME_INTERVAL = 1000 / FPS;
 export default class RoomsGameHandler {
   private Rooms: Room[];
 
-  constructor(private gameService: GameService = null) {
+  constructor() {
     this.Rooms = [];
   }
 
@@ -60,7 +59,7 @@ export default class RoomsGameHandler {
   }
 
   getRoomByClient(client: Socket) {
-    let data;
+    let data: any;
     this.Rooms.forEach((room, index) => {
       if (client.id === room.p1.socket.id) {
         data = {
@@ -98,17 +97,15 @@ export default class RoomsGameHandler {
     }
   }
 
-  onDisconnect(client: Socket) {
+  async onDisconnect(client: Socket) {
     const thisRoom = this.getRoomByClient(client);
-    if (!thisRoom) return false;
-    // MTODO: add score save
-    const { room, other: p2, this: p1 } = thisRoom;
-    this.gameService.saveGameRecord(p1, p2);
+    if (!thisRoom) return null;
+    const { room, other: p2 } = thisRoom;
     const oClinet = p2;
     if (room.interval) clearInterval(room.interval);
     this.Rooms = this.Rooms.filter((item) => item !== room);
     oClinet.socket.emit('delay', 'You win');
     oClinet.socket.disconnect(true);
-    return true;
+    return room;
   }
 }
