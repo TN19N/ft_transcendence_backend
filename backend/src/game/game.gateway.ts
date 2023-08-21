@@ -29,7 +29,7 @@ export class GameGateway implements OnGatewayDisconnect {
     const id = await this.validateJwtWbSocket(client);
 
     if (!id) {
-      this.disconnect(client);
+      return this.disconnect(client);
     }
 
     await this.userRepository.updateProfile(id, {
@@ -50,11 +50,17 @@ export class GameGateway implements OnGatewayDisconnect {
   }
 
   @SubscribeMessage('game-speed')
-  clientSpeedHandler(
+  async clientSpeedHandler(
     @ConnectedSocket() client: Socket,
     @MessageBody() speed: string,
   ) {
-    this.gameService.onNewConnection(client, speed);
+    const id = await this.validateJwtWbSocket(client);
+
+    if (!id) {
+      return this.disconnect(client);
+    }
+
+    this.gameService.onNewConnection(client, id, speed);
   }
 
   async handleDisconnect(client: Socket) {
@@ -64,7 +70,7 @@ export class GameGateway implements OnGatewayDisconnect {
       status: Status.ONLINE,
     });
 
-    this.gameService.disconnected(client, userId);
+    await this.gameService.disconnected(client, userId);
   }
 
   async validateJwtWbSocket(socket: Socket): Promise<string | null> {

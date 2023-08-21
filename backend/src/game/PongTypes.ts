@@ -1,20 +1,28 @@
 import { Socket } from 'socket.io';
 
+type SocketsWithIds = {
+  client: Socket;
+  id: string;
+}[];
+
 export type gameQeue = {
-  Slow: Socket[];
-  Medium: Socket[];
-  Fast: Socket[];
+  Slow: SocketsWithIds;
+  Medium: SocketsWithIds;
+  Fast: SocketsWithIds;
 };
 
 export type playerPair = {
   p1: Socket;
   p2: Socket;
+  pu1: string;
+  pu2: string;
 };
 
 export type UserData = {
   socket: Socket;
   score: number;
   y: number;
+  id: string;
 };
 
 export type Pos = {
@@ -49,5 +57,7 @@ export type RoomInfo = {
 
 export type inviteDbId = {
   id: string;
+  id2: string;
   client: Socket;
+  speed: string;
 };
