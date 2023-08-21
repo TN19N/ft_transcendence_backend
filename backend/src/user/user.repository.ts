@@ -110,8 +110,14 @@ export class UserRepository {
   }
 
   getGroupInvites(userId: string) {
-    return this.databaseService.groupInvite.findMany({
-      where: { receiverId: userId },
+    return this.databaseService.group.findMany({
+      where: {
+        requests: {
+          some: {
+            receiverId: userId,
+          },
+        },
+      },
     });
   }
 
@@ -389,17 +395,22 @@ export class UserRepository {
       .sentFriendRequests();
   }
 
-  getReceivedFriendRequests(userId: string): Promise<FriendRequest[]> {
-    return this.databaseService.user
-      .findUnique({
-        where: {
-          id: userId,
+  getReceivedFriendRequests(userId: string) {
+    return this.databaseService.profile.findMany({
+      where: {
+        user: {
+          sentFriendRequests: {
+            some: {
+              receiverId: userId,
+            },
+          },
         },
-        select: {
-          receivedFriendRequests: true,
-        },
-      })
-      .receivedFriendRequests();
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
   }
 
   getFriends(userId: string) {

@@ -35,7 +35,7 @@ export class CreateGroupDto {
     format: 'alphanumeric',
     minLength: 6,
     maxLength: 20,
-    example: 'mySuperStrongPassword',
+    example: 'myStrongPassword',
   })
   @IsAlphanumeric()
   @Length(6, 20)
