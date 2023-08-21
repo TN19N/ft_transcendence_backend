@@ -91,7 +91,16 @@ export class ChatController {
   @HttpCode(HttpStatus.OK)
   @Roles(Role.MEMBER_MUTED)
   async getGroupMembers(@Param('groupId', ParseUUIDPipe) groupId: string) {
-    return await this.chatRepository.getGroupMembers(groupId);
+    return (await this.chatRepository.getGroupMembers(groupId)).map(
+      (member) => {
+        return {
+          role: member.role,
+          id: member.user.id,
+          name: member.user.profile.name,
+          status: member.user.profile.status,
+        };
+      },
+    );
   }
 
   @Patch('group/:groupId/downgradeMember')
