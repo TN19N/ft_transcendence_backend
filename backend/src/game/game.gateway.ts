@@ -1,6 +1,7 @@
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
@@ -18,7 +19,7 @@ import { Status } from '@prisma/client';
   credentials: true,
   namespace: 'game',
 })
-export class GameGateway implements OnGatewayDisconnect {
+export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly gameService: GameService,
     private authenticationService: AuthenticationService,
@@ -93,6 +94,6 @@ export class GameGateway implements OnGatewayDisconnect {
 
   private disconnect(socket: Socket) {
     socket.emit('error', new UnauthorizedException());
-    socket.disconnect();
+    socket.disconnect(true);
   }
 }
