@@ -1,5 +1,9 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  OnGatewayConnection,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { UserGroup } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { AuthenticationService } from 'src/authentication/authentication.service';
@@ -16,7 +20,7 @@ enum MessageType {
   credentials: true,
   namespace: 'chat',
 })
-export class ChatGateway {
+export class ChatGateway implements OnGatewayConnection {
   constructor(
     private userRepository: UserRepository,
     private authenticationService: AuthenticationService,
@@ -35,6 +39,14 @@ export class ChatGateway {
     }
 
     socket.on('disconnect', async () => {
+      for (const [key, value] of this.connectedUsers.entries()) {
+        if (value.includes(socket)) {
+          this.connectedUsers.set(
+            key,
+            value.filter((item) => item !== socket),
+          );
+        }
+      }
       if (this.connectedUsers.get(userId).length === 0) {
         this.connectedUsers.delete(userId);
       }
@@ -47,17 +59,6 @@ export class ChatGateway {
       ]);
     } else {
       this.connectedUsers.set(userId, [socket]);
-    }
-  }
-
-  async handleDisconnect(socket: Socket) {
-    for (const [key, value] of this.connectedUsers.entries()) {
-      if (value.includes(socket)) {
-        this.connectedUsers.set(
-          key,
-          value.filter((item) => item !== socket),
-        );
-      }
     }
   }
 
@@ -117,6 +118,6 @@ export class ChatGateway {
 
   private disconnect(socket: Socket) {
     socket.emit('error', new UnauthorizedException());
-    socket.disconnect();
+    socket.disconnect(true);
   }
 }
