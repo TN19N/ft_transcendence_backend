@@ -8,6 +8,8 @@ import { ConfigurationService } from 'src/configuration/configuration.service';
 import { authenticator } from 'otplib';
 import axios from 'axios';
 import * as fs from 'fs';
+import { Socket } from 'socket.io';
+import { parse } from 'cookie';
 
 @Injectable()
 export class AuthenticationService {
@@ -148,5 +150,22 @@ export class AuthenticationService {
       token: await this.jwtService.signAsync(payload),
       twofa: is2faEnabled,
     };
+  }
+
+  async validateJwtWbSocket(socket: Socket): Promise<string | null> {
+    if (!socket.handshake.headers.cookie) {
+      return null;
+    }
+
+    const jwtToken = parse(socket.handshake.headers.cookie).Authentication;
+    if (jwtToken) {
+      const payload: JwtPayload = await this.validateJwt(jwtToken);
+
+      if (payload && payload.tfa == false) {
+        return (await this.validatePayload(payload))?.id;
+      }
+    }
+
+    return null;
   }
 }

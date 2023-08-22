@@ -6,7 +6,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthenticationService } from 'src/authentication/authentication.service';
-import { JwtPayload } from 'src/authentication/interface';
 import { UserRepository } from './user.repository';
 import { Status } from '@prisma/client';
 
@@ -39,7 +38,7 @@ export class UserGateway implements OnGatewayConnection {
   ) {}
 
   async handleConnection(socket: Socket) {
-    const userId = await this.validateJwtWbSocket(socket);
+    const userId = await this.authenticationService.validateJwtWbSocket(socket);
 
     if (!userId) {
       return this.disconnect(socket);
@@ -113,24 +112,6 @@ export class UserGateway implements OnGatewayConnection {
         });
       });
     }
-  }
-
-  private async validateJwtWbSocket(socket: Socket): Promise<string | null> {
-    const jwtToken = socket.handshake.headers.cookie
-      ?.split(';')
-      .find((cookie: string) => cookie.startsWith('Authentication='))
-      ?.split('=')[1];
-
-    if (jwtToken) {
-      const payload: JwtPayload =
-        await this.authenticationService.validateJwt(jwtToken);
-
-      if (payload && payload.tfa == false) {
-        return (await this.userRepository.getUserById(payload.sub))?.id;
-      }
-    }
-
-    return null;
   }
 
   private disconnect(socket: Socket) {
