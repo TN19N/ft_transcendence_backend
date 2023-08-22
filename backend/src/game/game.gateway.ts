@@ -9,7 +9,6 @@ import {
 import { Socket } from 'socket.io';
 import { GameService } from './game.service';
 import { AuthenticationService } from 'src/authentication/authentication.service';
-import { JwtPayload } from 'src/authentication/interface';
 import { UserRepository } from 'src/user/user.repository';
 import { UnauthorizedException } from '@nestjs/common';
 import { Status } from '@prisma/client';
@@ -27,7 +26,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
 
   async handleConnection(client: Socket) {
-    const id = await this.validateJwtWbSocket(client);
+    const id = await this.authenticationService.validateJwtWbSocket(client);
 
     if (!id) {
       return this.disconnect(client);
@@ -55,7 +54,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() speed: string,
   ) {
-    const id = await this.validateJwtWbSocket(client);
+    const id = await this.authenticationService.validateJwtWbSocket(client);
 
     if (!id) {
       return this.disconnect(client);
@@ -65,31 +64,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleDisconnect(client: Socket) {
-    const userId = await this.validateJwtWbSocket(client);
+    const userId = await this.authenticationService.validateJwtWbSocket(client);
 
     await this.userRepository.updateProfile(userId, {
       status: Status.ONLINE,
     });
 
     await this.gameService.disconnected(client, userId);
-  }
-
-  async validateJwtWbSocket(socket: Socket): Promise<string | null> {
-    const jwtToken = socket.handshake.headers.cookie
-      ?.split(';')
-      .find((cookie: string) => cookie.startsWith('Authentication='))
-      ?.split('=')[1];
-
-    if (jwtToken) {
-      const payload: JwtPayload =
-        await this.authenticationService.validateJwt(jwtToken);
-
-      if (payload && payload.tfa == false) {
-        return (await this.userRepository.getUserById(payload.sub))?.id;
-      }
-    }
-
-    return null;
   }
 
   private disconnect(socket: Socket) {

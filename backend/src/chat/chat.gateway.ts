@@ -7,8 +7,6 @@ import {
 import { UserGroup } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { AuthenticationService } from 'src/authentication/authentication.service';
-import { JwtPayload } from 'src/authentication/interface';
-import { UserRepository } from 'src/user/user.repository';
 
 enum MessageType {
   DM = 'dm',
@@ -21,10 +19,7 @@ enum MessageType {
   namespace: 'chat',
 })
 export class ChatGateway implements OnGatewayConnection {
-  constructor(
-    private userRepository: UserRepository,
-    private authenticationService: AuthenticationService,
-  ) {}
+  constructor(private authenticationService: AuthenticationService) {}
 
   @WebSocketServer()
   server: Server;
@@ -32,7 +27,7 @@ export class ChatGateway implements OnGatewayConnection {
   private connectedUsers: Map<string, Socket[]> = new Map();
 
   async handleConnection(socket: Socket) {
-    const userId = await this.validateJwtWbSocket(socket);
+    const userId = await this.authenticationService.validateJwtWbSocket(socket);
 
     if (!userId) {
       return this.disconnect(socket);
@@ -96,24 +91,6 @@ export class ChatGateway implements OnGatewayConnection {
         });
       }
     }
-  }
-
-  private async validateJwtWbSocket(socket: Socket): Promise<string | null> {
-    const jwtToken = socket.handshake.headers.cookie
-      ?.split(';')
-      .find((cookie: string) => cookie.startsWith('Authentication='))
-      ?.split('=')[1];
-
-    if (jwtToken) {
-      const payload: JwtPayload =
-        await this.authenticationService.validateJwt(jwtToken);
-
-      if (payload && payload.tfa == false) {
-        return (await this.userRepository.getUserById(payload.sub))?.id;
-      }
-    }
-
-    return null;
   }
 
   private disconnect(socket: Socket) {
