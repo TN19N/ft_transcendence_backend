@@ -1,7 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
 import {
   OnGatewayConnection,
-  OnGatewayDisconnect,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -28,7 +27,7 @@ enum NotificationType {
   credentials: true,
   namespace: 'user',
 })
-export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class UserGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
@@ -47,6 +46,14 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     socket.on('disconnect', async () => {
+      for (const [key, value] of this.connectedUsers.entries()) {
+        if (value.includes(socket)) {
+          this.connectedUsers.set(
+            key,
+            value.filter((item) => item.id !== socket.id),
+          );
+        }
+      }
       if (this.connectedUsers.get(userId).length === 0) {
         this.connectedUsers.delete(userId);
         await this.userRepository.updateProfile(userId, {
@@ -65,17 +72,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await this.userRepository.updateProfile(userId, {
         status: Status.ONLINE,
       });
-    }
-  }
-
-  async handleDisconnect(socket: Socket) {
-    for (const [key, value] of this.connectedUsers.entries()) {
-      if (value.includes(socket)) {
-        this.connectedUsers.set(
-          key,
-          value.filter((item) => item !== socket),
-        );
-      }
     }
   }
 
@@ -139,6 +135,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private disconnect(socket: Socket) {
     socket.emit('error', new UnauthorizedException());
-    socket.disconnect();
+    socket.disconnect(true);
   }
 }
