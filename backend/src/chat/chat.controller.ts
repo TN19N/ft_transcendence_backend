@@ -239,6 +239,7 @@ export class ChatController {
         ...group,
         message: group.messages[0]?.message ?? '',
         messages: undefined,
+        myId: userId,
       };
     });
   }
