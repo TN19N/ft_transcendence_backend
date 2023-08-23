@@ -39,7 +39,7 @@ export class UpdateGroupDto {
     format: 'alphanumeric',
     minLength: 6,
     maxLength: 20,
-    example: 'mySuperStrongPassword',
+    example: 'strongPassword',
     required: false,
   })
   @IsAlphanumeric()

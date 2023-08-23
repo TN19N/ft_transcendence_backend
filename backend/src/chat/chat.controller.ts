@@ -27,6 +27,7 @@ import { ChatRepository } from './chat.repository';
 import { RoleGuard } from './guard';
 import { Roles } from './decorator';
 import { Role } from '@prisma/client';
+import { ActionType, ChatGateway } from './chat.gateway';
 
 @Controller('v1/chat')
 @UseGuards(JwtGuard, RoleGuard)
@@ -36,13 +37,18 @@ export class ChatController {
   constructor(
     private chatService: ChatService,
     private chatRepository: ChatRepository,
+    private chatGateway: ChatGateway,
   ) {}
 
   @Delete('group/:groupId/delete')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.OWNER)
   async deleteGroup(@Param('groupId', ParseUUIDPipe) groupId: string) {
+    const members = await this.chatRepository.getGroupMembers(groupId);
     await this.chatRepository.deleteGroup(groupId);
+    this.chatGateway.sendAction(ActionType.GROUP_DELETED, members, {
+      groupId: groupId,
+    });
   }
 
   @Patch('group/:groupId/transferOwnership')
@@ -183,6 +189,8 @@ export class ChatController {
     @Param('groupId', ParseUUIDPipe) groupId: string,
     @Body() updateGroupDto: UpdateGroupDto,
   ) {
+    console.log('groupId: ', groupId);
+    console.log('data: ', updateGroupDto);
     await this.chatService.updateGroup(groupId, updateGroupDto);
   }
 

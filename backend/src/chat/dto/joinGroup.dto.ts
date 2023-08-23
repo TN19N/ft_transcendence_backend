@@ -8,7 +8,7 @@ export class JoinGroupDto {
     format: 'alphanumeric',
     minLength: 6,
     maxLength: 20,
-    example: 'mySuperStrongPassword',
+    example: 'strongPassword',
   })
   @IsAlphanumeric()
   @Length(6, 20)
