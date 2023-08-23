@@ -152,6 +152,15 @@ export class UserController {
     await this.userService.removeFriendRequest(userId, senderId);
   }
 
+  @Delete('friendRequest/sent')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async removefriendRequestSent(
+    @GetUserId() userId: string,
+    @Query('reciverId', ParseUUIDPipe) reciverId: string,
+  ) {
+    await this.userService.removeFriendRequestSent(userId, reciverId);
+  }
+
   @Delete('removeFriend')
   @HttpCode(HttpStatus.NO_CONTENT)
   async removeFriend(

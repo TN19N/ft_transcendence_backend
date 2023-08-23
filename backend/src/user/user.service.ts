@@ -92,6 +92,19 @@ export class UserService {
     }
   }
 
+  async removeFriendRequestSent(userId: string, reciverId: string) {
+    const friendRequest = await this.userRepository.getFriendRequest(
+      userId,
+      reciverId,
+    );
+
+    if (friendRequest) {
+      await this.userRepository.deletFriendRequest(userId, reciverId);
+    } else {
+      throw new NotFoundException(`friendRequest not found`);
+    }
+  }
+
   async sendFriendRequest(userId: string, friendId: string) {
     if (userId === friendId) {
       throw new ConflictException(
