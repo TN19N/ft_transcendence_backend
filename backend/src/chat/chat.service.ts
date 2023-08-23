@@ -75,7 +75,6 @@ export class ChatService {
   }
 
   async muteUser(userId: string, groupId: string, userToMuteId: string) {
-    const user = await this.chatRepository.getUserGroup(userId, groupId);
     const userToMute = await this.chatRepository.getUserGroup(
       userToMuteId,
       groupId,
@@ -89,7 +88,7 @@ export class ChatService {
       throw new ForbiddenException('You cannot mute yourself!');
     }
 
-    if (user.role === userToMute.role) {
+    if (userToMute.role === Role.ADMIN) {
       throw new ForbiddenException('You cannot mute other admins');
     }
 
