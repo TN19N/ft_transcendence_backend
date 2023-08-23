@@ -178,7 +178,6 @@ export class ChatService {
   }
 
   async banFromGroup(userId: string, groupId: string, userToBanId: string) {
-    const user = await this.chatRepository.getUserGroup(userId, groupId);
     const userToBan = await this.chatRepository.getUserGroup(
       userToBanId,
       groupId,
@@ -194,7 +193,7 @@ export class ChatService {
       throw new ForbiddenException('You cannot ban yourself!');
     }
 
-    if (user.role === userToBan.role) {
+    if (userToBan.role === Role.ADMIN) {
       throw new ForbiddenException('You cannot ban other admins');
     }
 
