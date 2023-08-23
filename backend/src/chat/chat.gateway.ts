@@ -13,6 +13,20 @@ enum MessageType {
   GROUP = 'group',
 }
 
+export enum ActionType {
+  USER_BANNED = 'USER_BANNED',
+  USER_UNBAN = 'USER_UNBANNED',
+  USER_MUTED = 'USER_MUTED',
+  USER_UNMUTED = 'USER_UNMUTED',
+  USER_UPGRADED = 'USER_UPGRADED',
+  USER_DOWNGRADED = 'USER_DOWNGRADED',
+  USER_JOINED = 'USER_JOINED',
+  USER_LEAVED = 'USER_LEAVED',
+  GROUP_DELETED = 'GROUP_DELETED',
+  OWNERSHIP_TRANSFERMED = 'OWNERSHIP_TRANSFERMED',
+  GROUP_UPDATED = 'GROUP_UPDATED',
+}
+
 @WebSocketGateway({
   cors: process.env.FRONTEND_URL,
   credentials: true,
@@ -58,7 +72,7 @@ export class ChatGateway implements OnGatewayConnection {
   }
 
   sendDmMessage(senderId: string, receiverId: string, message: string) {
-    if (senderId != receiverId && this.connectedUsers.has(receiverId)) {
+    if (this.connectedUsers.has(receiverId)) {
       this.connectedUsers.get(receiverId).forEach((socket) => {
         socket.emit('message', {
           type: MessageType.DM,
@@ -78,7 +92,7 @@ export class ChatGateway implements OnGatewayConnection {
     message: string,
   ) {
     for (const member of members) {
-      if (senderId != member.userId && this.connectedUsers.has(member.userId)) {
+      if (this.connectedUsers.has(member.userId)) {
         this.connectedUsers.get(member.userId).forEach((socket) => {
           socket.emit('message', {
             type: MessageType.GROUP,
@@ -87,6 +101,20 @@ export class ChatGateway implements OnGatewayConnection {
               senderId: senderId,
               message: message,
             },
+          });
+        });
+      }
+    }
+  }
+
+  sendAction(actionType: ActionType, members: any[], payload: object) {
+    for (const member of members) {
+      member.userId = member.userId ?? member.user?.id;
+      if (this.connectedUsers.has(member.userId)) {
+        this.connectedUsers.get(member.userId).forEach((socket) => {
+          socket.emit('action', {
+            actionType,
+            payload,
           });
         });
       }
