@@ -204,9 +204,7 @@ export class ChatService {
     const group = await this.chatRepository.getGroupById(groupId);
 
     if (!group.bannedUsers.some((user) => user.id === userToUnBanId)) {
-      throw new NotFoundException(
-        `User with id ${userToUnBanId} is not banned from this group`,
-      );
+      throw new NotFoundException(`User is not banned from this group`);
     }
 
     await this.userRepository.unBanUserFromGroup(userToUnBanId, groupId);
@@ -226,9 +224,7 @@ export class ChatService {
     );
 
     if (!userToBan) {
-      throw new NotFoundException(
-        `User with id ${userToBanId} is not a member of this group`,
-      );
+      throw new NotFoundException(`User is not a member of this group`);
     }
 
     if (userId === userToBanId) {
@@ -276,7 +272,7 @@ export class ChatService {
     const receiver = await this.userRepository.getUserById(receiverId);
 
     if (!receiver) {
-      throw new NotFoundException(`User with id ${receiver} not found`);
+      throw new NotFoundException(`User not found`);
     }
 
     if (group.members.some((member) => member.userId === receiverId)) {
@@ -353,7 +349,7 @@ export class ChatService {
     const group = await this.chatRepository.getGroupById(groupId);
 
     if (!group || group.type === GroupType.PRIVATE) {
-      throw new NotFoundException(`Group with id ${groupId} not found`);
+      throw new NotFoundException(`Group not found`);
     }
 
     if (group.members.some((member) => member.userId === userId)) {
@@ -413,23 +409,19 @@ export class ChatService {
     { content }: MessageDto,
   ) {
     if (!(await this.userRepository.getUserById(receiverId))) {
-      throw new NotFoundException(`User with id ${receiverId} not found`);
+      throw new NotFoundException(`User not found`);
     }
 
     if (!(await this.userRepository.getFriendship(senderId, receiverId))) {
-      throw new ForbiddenException(
-        `You are not friends with user with id ${receiverId}`,
-      );
+      throw new ForbiddenException(`You are not friends with user`);
     }
 
     if (await this.userRepository.getBan(senderId, receiverId)) {
-      throw new ForbiddenException(
-        `You have banned user with id ${receiverId}`,
-      );
+      throw new ForbiddenException(`You have banned user`);
     }
 
     if (await this.userRepository.getBan(receiverId, senderId)) {
-      throw new ForbiddenException(`User with id ${receiverId} has banned you`);
+      throw new ForbiddenException(`User has banned you`);
     }
 
     await this.chatRepository.createDmMessage(senderId, receiverId, content);
@@ -466,7 +458,7 @@ export class ChatService {
 
   async getDm(userId: string, pairId: string): Promise<MessageDm[]> {
     if (!(await this.userRepository.getUserById(pairId))) {
-      throw new NotFoundException(`User with id ${pairId} not found`);
+      throw new NotFoundException(`User not found`);
     }
 
     return await this.chatRepository.getDm(userId, pairId);

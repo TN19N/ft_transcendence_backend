@@ -12,6 +12,7 @@ import {
   DefaultValuePipe,
   Delete,
   Patch,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { GetUserId } from 'src/authentication/decorator';
@@ -124,6 +125,13 @@ export class ChatController {
     );
   }
 
+  @Get('group/:groupId/membersCount')
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.MEMBER_MUTED)
+  async getMembersCount(@Param('groupId', ParseUUIDPipe) groupId: string) {
+    return await this.chatRepository.getMembersCount(groupId);
+  }
+
   @Patch('group/:groupId/upgradeMember')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.OWNER)
@@ -180,6 +188,42 @@ export class ChatController {
     @Param('groupId', ParseUUIDPipe) groupId: string,
   ) {
     await this.chatService.acceptInvite(userId, groupId);
+  }
+
+  @Get('group/:groupId/friendsToJoin')
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.ADMIN)
+  async getFriendsToJoin(
+    @GetUserId() userId: string,
+    @Param('groupId', ParseUUIDPipe) groupId: string,
+  ) {
+    return (await this.chatRepository.getFriendsToJoin(userId, groupId)).map(
+      (friend) => {
+        return {
+          ...friend,
+          isBlocked: friend.user.bannedGroups.length > 0 ? true : false,
+          isInvited:
+            friend.user.receivedGroupRequests.length > 0 ? true : false,
+          user: undefined,
+        };
+      },
+    );
+  }
+
+  @Delete('group/:groupId/invite')
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.ADMIN)
+  async removeGroupInvite(
+    @Param('groupId', ParseUUIDPipe) groupId: string,
+    @Query('reciverId', ParseUUIDPipe) reciverId: string,
+  ) {
+    const invite = await this.chatRepository.getGroupInvite(reciverId, groupId);
+
+    if (invite) {
+      await this.chatRepository.deleteGroupInvite(reciverId, groupId);
+    } else {
+      throw new NotFoundException('friend request not Found');
+    }
   }
 
   @Patch('group/:groupId/update')
