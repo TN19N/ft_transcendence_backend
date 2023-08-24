@@ -93,6 +93,17 @@ export class ChatRepository {
     });
   }
 
+  async deleteGroupInvite(receiverId: string, groupId: string) {
+    await this.databaseService.groupInvite.delete({
+      where: {
+        GroupInviteId: {
+          receiverId: receiverId,
+          groupId: groupId,
+        },
+      },
+    });
+  }
+
   getGroupInvite(receiverId: string, groupId: string) {
     return this.databaseService.groupInvite.findUnique({
       where: {
@@ -119,6 +130,12 @@ export class ChatRepository {
     });
   }
 
+  getMembersCount(groupId: string) {
+    return this.databaseService.userGroup.count({
+      where: { groupId: groupId },
+    });
+  }
+
   async createGroupInvite(receiverId: string, groupId: string) {
     await this.databaseService.groupInvite.create({
       data: {
@@ -141,6 +158,41 @@ export class ChatRepository {
         type: type,
         sensitiveData: {
           update: { password: password },
+        },
+      },
+    });
+  }
+
+  getFriendsToJoin(userId: string, groupId: string) {
+    return this.databaseService.profile.findMany({
+      where: {
+        user: {
+          friendOf: {
+            some: {
+              userId: userId,
+            },
+          },
+          joinedGroups: {
+            none: {
+              groupId: groupId,
+            },
+          },
+        },
+      },
+      include: {
+        user: {
+          include: {
+            bannedGroups: {
+              where: {
+                id: groupId,
+              },
+            },
+            receivedGroupRequests: {
+              where: {
+                groupId: groupId,
+              },
+            },
+          },
         },
       },
     });

@@ -121,11 +121,11 @@ export class UserRepository {
     });
   }
 
-  async deleteGroupInvite(userId: string, groupId: string) {
+  async deleteGroupInvite(receiverId: string, groupId: string) {
     await this.databaseService.groupInvite.delete({
       where: {
         GroupInviteId: {
-          receiverId: userId,
+          receiverId: receiverId,
           groupId: groupId,
         },
       },
