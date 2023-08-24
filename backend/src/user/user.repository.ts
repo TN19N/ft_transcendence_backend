@@ -474,6 +474,7 @@ export class UserRepository {
           sensitiveData: {
             create: {
               intra42Id: intra42Id,
+              googleId: googleId,
             },
           },
         },

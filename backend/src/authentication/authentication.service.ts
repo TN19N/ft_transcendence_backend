@@ -25,12 +25,14 @@ export class AuthenticationService {
     avatar_link?: string,
   ): Promise<User> {
     let user: User;
-    while (true) {
-      if (!username) {
-        username = 'user' + Math.floor(Math.random() * 1000000);
-      }
 
+    if (!username) {
+      username = 'user' + Math.floor(Math.random() * 1000000);
+    }
+
+    while (true) {
       try {
+        console.log('name: ', username);
         user = await this.userRepository.createUser(username, id);
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -39,6 +41,8 @@ export class AuthenticationService {
             continue;
           }
         }
+
+        console.log(' Erororoorororoororo!!! ');
 
         throw error;
       }
