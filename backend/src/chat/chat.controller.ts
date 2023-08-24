@@ -13,6 +13,7 @@ import {
   Delete,
   Patch,
   NotFoundException,
+  Put,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { GetUserId } from 'src/authentication/decorator';
@@ -247,6 +248,17 @@ export class ChatController {
     @Body() messageDto: MessageDto,
   ) {
     await this.chatService.sendGroupMessage(userId, groupId, messageDto);
+  }
+
+  @Put('group/:groupId/unBanAndInvite')
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.ADMIN)
+  async unBanAndInvite(
+    @Param('groupId', ParseUUIDPipe) groupId: string,
+    @Query('userId', ParseUUIDPipe) userId: string,
+  ) {
+    await this.chatService.unBanFromGroup(groupId, userId);
+    await this.chatService.inviteToGroup(groupId, userId);
   }
 
   @Get('group/:groupId/messages')
