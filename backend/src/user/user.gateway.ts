@@ -114,6 +114,14 @@ export class UserGateway implements OnGatewayConnection {
     }
   }
 
+  sendSignalToStartGame(receiverId: string) {
+    if (this.connectedUsers.has(receiverId)) {
+      this.connectedUsers.get(receiverId).forEach((socket) => {
+        socket.emit('startGame');
+      });
+    }
+  }
+
   private disconnect(socket: Socket) {
     socket.emit('error', new UnauthorizedException());
     socket.disconnect(true);

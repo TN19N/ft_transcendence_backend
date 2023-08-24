@@ -36,7 +36,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { AchievementType, User } from '@prisma/client';
 import { Response } from 'express';
-import { GameSpeed } from './user.gateway';
+import { GameSpeed, UserGateway } from './user.gateway';
 
 @Controller('v1/user')
 @ApiTags('v1/user')
@@ -47,6 +47,7 @@ export class UserController {
     private userService: UserService,
     private userRepository: UserRepository,
     private authenticationService: AuthenticationService,
+    private userGateway: UserGateway,
   ) {}
 
   @Get('isFriendRequestSent')
@@ -87,8 +88,20 @@ export class UserController {
     }
   }
 
+  @Post('acceptGameInvite')
+  @HttpCode(HttpStatus.CREATED)
+  async acceptGameInvite(@Query('reciverId', ParseUUIDPipe) reciverId: string) {
+    const reciver = await this.userRepository.getUserById(reciverId);
+
+    if (reciver) {
+      this.userGateway.sendSignalToStartGame(reciverId);
+    } else {
+      throw new NotFoundException('user not found');
+    }
+  }
+
   @Post('sendGameInvite')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   async sendGameInvite(
     @GetUserId() userId: string,
     @Query('reciverId', ParseUUIDPipe) reciverId: string,
