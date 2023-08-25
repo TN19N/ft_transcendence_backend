@@ -176,10 +176,11 @@ export class ChatController {
   @HttpCode(HttpStatus.OK)
   @Roles(Role.ADMIN)
   async inviteToGroup(
+    @GetUserId() userId: string,
     @Param('groupId', ParseUUIDPipe) groupId: string,
     @Query('userToInviteId', ParseUUIDPipe) userToInviteId: string,
   ) {
-    await this.chatService.inviteToGroup(groupId, userToInviteId);
+    await this.chatService.inviteToGroup(groupId, userId, userToInviteId);
   }
 
   @Post('group/:groupId/acceptInvite')
@@ -254,11 +255,12 @@ export class ChatController {
   @HttpCode(HttpStatus.OK)
   @Roles(Role.ADMIN)
   async unBanAndInvite(
+    @GetUserId() userId: string,
     @Param('groupId', ParseUUIDPipe) groupId: string,
-    @Query('userId', ParseUUIDPipe) userId: string,
+    @Query('userId', ParseUUIDPipe) reciverId: string,
   ) {
-    await this.chatService.unBanFromGroup(groupId, userId);
-    await this.chatService.inviteToGroup(groupId, userId);
+    await this.chatService.unBanFromGroup(groupId, reciverId);
+    await this.chatService.inviteToGroup(groupId, userId, reciverId);
   }
 
   @Get('group/:groupId/messages')
