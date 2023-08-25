@@ -10,6 +10,7 @@ import axios from 'axios';
 import * as fs from 'fs';
 import { Socket } from 'socket.io';
 import { parse } from 'cookie';
+import { isAlphanumeric } from 'class-validator';
 
 @Injectable()
 export class AuthenticationService {
@@ -28,11 +29,13 @@ export class AuthenticationService {
 
     if (!username) {
       username = 'user' + Math.floor(Math.random() * 1000000);
+    } else {
+      username = [...username].filter((c) => isAlphanumeric(c)).join('');
+      username = username.substring(0, Math.min(10, username.length));
     }
 
     while (true) {
       try {
-        console.log('name: ', username);
         user = await this.userRepository.createUser(username, id);
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {

@@ -14,11 +14,11 @@ export class CreateGroupDto {
     type: String,
     format: 'alphanumeric',
     minLength: 1,
-    maxLength: 20,
+    maxLength: 10,
     example: 'do3afaGroup',
   })
   @IsAlphanumeric()
-  @MaxLength(20)
+  @MaxLength(10)
   name: string;
 
   @ApiProperty({
