@@ -27,7 +27,7 @@ export class UserService {
 
     if (reciver) {
       if (await this.userRepository.getFriendship(userId, reciverId)) {
-        this.userGateway.sendGameInvite(reciverId, userId, speed);
+        await this.userGateway.sendGameInvite(reciverId, userId, speed);
       } else {
         throw new ForbiddenException("you can't send game invite to this user");
       }
@@ -130,7 +130,7 @@ export class UserService {
 
     try {
       await this.userRepository.createFriendRequest(userId, friendId);
-      this.userGateway.sendFriendRequest(userId, friendId);
+      await this.userGateway.sendFriendRequest(userId, friendId);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {

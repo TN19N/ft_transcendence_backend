@@ -74,40 +74,45 @@ export class UserGateway implements OnGatewayConnection {
     }
   }
 
-  sendGameInvite(receiverId: string, senderId: string, speed: GameSpeed) {
+  async sendGameInvite(receiverId: string, senderId: string, speed: GameSpeed) {
     if (this.connectedUsers.has(receiverId)) {
+      const { name } = await this.userRepository.getProfile(senderId);
       this.connectedUsers.get(receiverId).forEach((socket) => {
         socket.emit('notification', {
           type: NotificationType.GAME_INVITE,
           payload: {
             senderId: senderId,
             speed: speed,
+            name: name,
           },
         });
       });
     }
   }
 
-  sendGroupInvite(receiverId: string, groupId: string) {
+  sendGroupInvite(receiverId: string, groupId: string, name: string) {
     if (this.connectedUsers.has(receiverId)) {
       this.connectedUsers.get(receiverId).forEach((socket) => {
         socket.emit('notification', {
           type: NotificationType.GROUP_INVITE,
           payload: {
             groupId: groupId,
+            name: name,
           },
         });
       });
     }
   }
 
-  sendFriendRequest(senderId: string, receiverId: string) {
+  async sendFriendRequest(senderId: string, receiverId: string) {
     if (this.connectedUsers.has(receiverId)) {
+      const { name } = await this.userRepository.getProfile(senderId);
       this.connectedUsers.get(receiverId).forEach((socket) => {
         socket.emit('notification', {
           type: NotificationType.FRIEND_REQUEST,
           payload: {
             senderId: senderId,
+            name: name,
           },
         });
       });
