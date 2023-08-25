@@ -122,6 +122,14 @@ export class UserGateway implements OnGatewayConnection {
     }
   }
 
+  sendSignalToStopTimer(receiverId: string) {
+    if (this.connectedUsers.has(receiverId)) {
+      this.connectedUsers.get(receiverId).forEach((socket) => {
+        socket.emit('stopTimer');
+      });
+    }
+  }
+
   private disconnect(socket: Socket) {
     socket.emit('error', new UnauthorizedException());
     socket.disconnect(true);

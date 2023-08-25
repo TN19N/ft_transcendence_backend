@@ -5,6 +5,7 @@ import RoomsGameHandler from './roomsHandler';
 import { UserRepository } from 'src/user/user.repository';
 import { AchievementType } from '@prisma/client';
 import { Room, UserData, inviteDbId, playerPair } from './PongTypes';
+import { UserGateway } from 'src/user/user.gateway';
 
 @Injectable()
 export class GameService {
@@ -13,7 +14,10 @@ export class GameService {
   private clients: string[];
   private WaitInvite: inviteDbId[];
 
-  constructor(private userRepository: UserRepository) {
+  constructor(
+    private userRepository: UserRepository,
+    private userGateway: UserGateway,
+  ) {
     this.queue = new QueueGameHandler();
     this.room = new RoomsGameHandler();
     this.clients = [];
@@ -32,6 +36,7 @@ export class GameService {
       client: client,
       speed: speed,
     });
+    this.userGateway.sendSignalToStartGame(userDbId);
   }
 
   private async saveAchievements(id: string) {

@@ -94,7 +94,7 @@ export class UserController {
     const reciver = await this.userRepository.getUserById(reciverId);
 
     if (reciver) {
-      this.userGateway.sendSignalToStartGame(reciverId);
+      this.userGateway.sendSignalToStopTimer(reciverId);
     } else {
       throw new NotFoundException('user not found');
     }
