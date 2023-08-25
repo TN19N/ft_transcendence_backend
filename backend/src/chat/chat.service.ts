@@ -267,12 +267,16 @@ export class ChatService {
     });
   }
 
-  async inviteToGroup(groupId: string, receiverId: string) {
+  async inviteToGroup(groupId: string, userId: string, receiverId: string) {
     const group = await this.chatRepository.getGroupById(groupId);
     const receiver = await this.userRepository.getUserById(receiverId);
 
     if (!receiver) {
-      throw new NotFoundException(`User not found`);
+      throw new NotFoundException('User not found');
+    }
+
+    if (!(await this.userRepository.getFriendship(userId, receiverId))) {
+      throw new ForbiddenException('user is not your friend');
     }
 
     if (group.members.some((member) => member.userId === receiverId)) {
