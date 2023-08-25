@@ -38,6 +38,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const userId = client.handshake.query.userId as string;
     const speed = client.handshake.query.speed as string;
+
     this.gameService.onRowConnection(client, userId, id, speed);
   }
 
