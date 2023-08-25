@@ -7,10 +7,10 @@ export class UpdateProfileDto {
     type: String,
     format: 'alphanumeric',
     minLength: 1,
-    maxLength: 20,
+    maxLength: 10,
     example: 'user42',
   })
   @IsAlphanumeric()
-  @MaxLength(20)
+  @MaxLength(10)
   name: string;
 }

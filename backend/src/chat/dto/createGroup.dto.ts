@@ -15,7 +15,7 @@ export class CreateGroupDto {
     format: 'alphanumeric',
     minLength: 1,
     maxLength: 10,
-    example: 'do3afaGroup',
+    example: 'Group12',
   })
   @IsAlphanumeric()
   @MaxLength(10)
@@ -35,7 +35,7 @@ export class CreateGroupDto {
     format: 'alphanumeric',
     minLength: 6,
     maxLength: 20,
-    example: 'myStrongPassword',
+    example: 'password',
   })
   @IsAlphanumeric()
   @Length(6, 20)

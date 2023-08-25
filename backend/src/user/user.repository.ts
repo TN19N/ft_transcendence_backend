@@ -165,6 +165,7 @@ export class UserRepository {
         where: { id: groupId },
         data: {
           bannedUsers: { connect: { id: userToBanId } },
+          membersCount: { decrement: 1 },
         },
       });
     });

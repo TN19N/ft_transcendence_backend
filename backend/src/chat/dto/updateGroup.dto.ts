@@ -14,12 +14,12 @@ export class UpdateGroupDto {
     type: String,
     format: 'alphanumeric',
     minLength: 1,
-    maxLength: 20,
-    example: 'do3afaGroup',
+    maxLength: 10,
+    example: 'Group',
     required: false,
   })
   @IsAlphanumeric()
-  @MaxLength(20)
+  @MaxLength(10)
   @IsOptional()
   name?: string;
 
