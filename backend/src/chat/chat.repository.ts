@@ -39,14 +39,21 @@ export class ChatRepository {
     });
   }
 
-  deleteUserGroup(userId: string, groupId: string) {
-    return this.databaseService.userGroup.delete({
-      where: {
-        UserGroupId: {
-          userId: userId,
-          groupId: groupId,
+  async deleteUserGroup(userId: string, groupId: string) {
+    await this.databaseService.$transaction(async (prisma: PrismaClient) => {
+      await prisma.userGroup.delete({
+        where: {
+          UserGroupId: {
+            userId: userId,
+            groupId: groupId,
+          },
         },
-      },
+      });
+
+      await prisma.group.update({
+        where: { id: groupId },
+        data: { membersCount: { decrement: 1 } },
+      });
     });
   }
 
@@ -120,6 +127,7 @@ export class ChatRepository {
       await prisma.groupInvite.deleteMany({
         where: { receiverId: userId },
       });
+
       await prisma.userGroup.create({
         data: {
           user: { connect: { id: userId } },
@@ -127,12 +135,11 @@ export class ChatRepository {
           role: Role.MEMBER,
         },
       });
-    });
-  }
 
-  getMembersCount(groupId: string) {
-    return this.databaseService.userGroup.count({
-      where: { groupId: groupId },
+      await prisma.group.update({
+        where: { id: groupId },
+        data: { membersCount: { increment: 1 } },
+      });
     });
   }
 
@@ -209,12 +216,19 @@ export class ChatRepository {
   }
 
   async addUserToGroup(userId: string, groupId: string) {
-    await this.databaseService.userGroup.create({
-      data: {
-        user: { connect: { id: userId } },
-        group: { connect: { id: groupId } },
-        role: Role.MEMBER,
-      },
+    await this.databaseService.$transaction(async (prisma: PrismaClient) => {
+      await prisma.userGroup.create({
+        data: {
+          user: { connect: { id: userId } },
+          group: { connect: { id: groupId } },
+          role: Role.MEMBER,
+        },
+      });
+
+      await prisma.group.update({
+        where: { id: groupId },
+        data: { membersCount: { increment: 1 } },
+      });
     });
   }
 
@@ -295,10 +309,8 @@ export class ChatRepository {
     return this.databaseService.group.findMany({
       where: {
         name: { startsWith: query },
-        OR: [
-          { type: { not: GroupType.PRIVATE } },
-          { members: { some: { userId: userId } } },
-        ],
+        type: { not: GroupType.PRIVATE },
+        members: { none: { userId: userId } },
       },
       select: {
         id: true,

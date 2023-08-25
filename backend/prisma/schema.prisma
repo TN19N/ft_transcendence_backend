@@ -197,6 +197,7 @@ model Group {
   name          String                @unique
   type          GroupType
   sensitiveData GroupSensitiveData?
+  membersCount  Int                   @default(1)
   
   owner         User                  @relation(name: "OwnerToGroup", fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId       String

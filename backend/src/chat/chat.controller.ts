@@ -126,13 +126,6 @@ export class ChatController {
     );
   }
 
-  @Get('group/:groupId/membersCount')
-  @HttpCode(HttpStatus.OK)
-  @Roles(Role.MEMBER_MUTED)
-  async getMembersCount(@Param('groupId', ParseUUIDPipe) groupId: string) {
-    return await this.chatRepository.getMembersCount(groupId);
-  }
-
   @Patch('group/:groupId/upgradeMember')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.OWNER)
