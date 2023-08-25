@@ -27,7 +27,7 @@ export class UserService {
 
     if (reciver) {
       if (await this.userRepository.getFriendship(userId, reciverId)) {
-        this.userGateway.sendGameInvite(reciverId, userId, speed);
+        await this.userGateway.sendGameInvite(reciverId, userId, speed);
       } else {
         throw new ForbiddenException("you can't send game invite to this user");
       }
