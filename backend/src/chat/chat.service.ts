@@ -299,7 +299,7 @@ export class ChatService {
       throw error;
     }
 
-    this.userGateway.sendGroupInvite(receiverId, groupId);
+    this.userGateway.sendGroupInvite(receiverId, groupId, group.name);
   }
 
   async updateGroup(groupId: string, { name, type, password }: UpdateGroupDto) {

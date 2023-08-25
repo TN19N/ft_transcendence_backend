@@ -130,7 +130,7 @@ export class UserService {
 
     try {
       await this.userRepository.createFriendRequest(userId, friendId);
-      this.userGateway.sendFriendRequest(userId, friendId);
+      await this.userGateway.sendFriendRequest(userId, friendId);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
