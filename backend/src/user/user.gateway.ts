@@ -10,9 +10,9 @@ import { UserRepository } from './user.repository';
 import { Status } from '@prisma/client';
 
 export enum GameSpeed {
-  SLOW = 'SLOW',
-  MEDIUM = 'MEDIUM',
-  FAST = 'FAST',
+  SLOW = 'Slow',
+  MEDIUM = 'Medium',
+  FAST = 'Fast',
 }
 
 enum NotificationType {
