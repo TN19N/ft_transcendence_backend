@@ -6,7 +6,6 @@ import {
   Delete,
   ForbiddenException,
   Get,
-  Header,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -18,7 +17,6 @@ import {
   Put,
   Query,
   Res,
-  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -30,7 +28,6 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { TwofaDto, UpdateProfileDto } from './dto';
 import { AuthenticationService } from 'src/authentication/authentication.service';
-import { createReadStream } from 'fs';
 import { join } from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -112,15 +109,14 @@ export class UserController {
 
   @Get('achievement/:achievementType')
   @HttpCode(HttpStatus.OK)
-  @Header('Content-Type', 'image/png')
-  @Header('Content-Disposition', 'inline')
   async getAchievement(
     @Param('achievementType', new ParseEnumPipe(AchievementType))
     achievementType: AchievementType,
+    @Res() response: Response,
   ) {
-    return new StreamableFile(
-      createReadStream(join(process.cwd(), `./assets/${achievementType}`)),
-    );
+    response
+      .contentType('image/png')
+      .download(join(process.cwd(), `./assets/${achievementType}`));
   }
 
   @Post('ban')
@@ -316,10 +312,9 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @ApiQuery({ name: 'id', required: false })
   @ApiConsumes('multipart/form-data')
-  @Header('Content-Disposition', 'inline')
   async getAvatar(
     @GetUserId() userId: string,
-    @Res({ passthrough: true }) response: Response,
+    @Res() response: Response,
     @Query('id') id?: string,
   ) {
     const user = await this.userRepository.getUserById(id ?? userId);
@@ -330,10 +325,9 @@ export class UserController {
 
     const { avatarType } = await this.userRepository.getProfile(id ?? userId);
 
-    response.set('Content-Type', avatarType);
-    return new StreamableFile(
-      createReadStream(join(process.cwd(), `./upload/${user.id}`)),
-    );
+    response
+      .contentType(avatarType)
+      .download(join(process.cwd(), `./upload/${user.id}`));
   }
 
   @Post('avatar')
