@@ -15,7 +15,7 @@ with a nice user interface, a chat, and real-time notification and missaging.
   - edit .env (e.x: add your intra and google credentials)
   - docker compose up production (or development)
   - open API docs at $SERVER_HOST/api/docs
-  - open Database client (dbeaver) $SERVER_HOST:$DATABASE_CLIENT_PORT
+  - open Database client (dbeaver) http://localhost:$DATABASE_CLIENT_PORT
 
 ## Tech Stack
   - nestJs with typescript
