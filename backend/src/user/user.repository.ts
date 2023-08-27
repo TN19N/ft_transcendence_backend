@@ -576,6 +576,11 @@ export class UserRepository {
               userId: userId,
             },
           },
+          friends: {
+            none: {
+              friendId: userId,
+            },
+          },
           profile: {
             name: {
               startsWith: query,
