@@ -205,8 +205,8 @@ export class ChatRepository {
     });
   }
 
-  async createGroupMessage(userId: string, groupId: string, message: string) {
-    await this.databaseService.messageGroup.create({
+  createGroupMessage(userId: string, groupId: string, message: string) {
+    return this.databaseService.messageGroup.create({
       data: {
         sender: { connect: { id: userId } },
         group: { connect: { id: groupId } },
@@ -350,8 +350,8 @@ export class ChatRepository {
     });
   }
 
-  async createDmMessage(senderId: string, receiverId: string, message: string) {
-    await this.databaseService.messageDm.create({
+  createDmMessage(senderId: string, receiverId: string, message: string) {
+    return this.databaseService.messageDm.create({
       data: {
         sender: { connect: { id: senderId } },
         receiver: { connect: { id: receiverId } },

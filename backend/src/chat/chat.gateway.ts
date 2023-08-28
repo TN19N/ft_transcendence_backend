@@ -4,7 +4,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { UserGroup } from '@prisma/client';
+import { MessageDm, MessageGroup, UserGroup } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { AuthenticationService } from 'src/authentication/authentication.service';
 
@@ -71,35 +71,27 @@ export class ChatGateway implements OnGatewayConnection {
     }
   }
 
-  sendDmMessage(senderId: string, receiverId: string, message: string) {
-    if (this.connectedUsers.has(receiverId)) {
-      this.connectedUsers.get(receiverId).forEach((socket) => {
+  sendDmMessage(message: MessageDm) {
+    if (this.connectedUsers.has(message.receiverId)) {
+      this.connectedUsers.get(message.receiverId).forEach((socket) => {
         socket.emit('message', {
           type: MessageType.DM,
           payload: {
-            senderId: senderId,
-            message: message,
+            ...message,
           },
         });
       });
     }
   }
 
-  sendGroupMessage(
-    members: UserGroup[],
-    groupId: string,
-    senderId: string,
-    message: string,
-  ) {
+  sendGroupMessage(members: UserGroup[], message: MessageGroup) {
     for (const member of members) {
       if (this.connectedUsers.has(member.userId)) {
         this.connectedUsers.get(member.userId).forEach((socket) => {
           socket.emit('message', {
             type: MessageType.GROUP,
             payload: {
-              groupId: groupId,
-              senderId: senderId,
-              message: message,
+              ...message,
             },
           });
         });
