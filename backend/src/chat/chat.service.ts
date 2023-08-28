@@ -345,7 +345,7 @@ export class ChatService {
       groupId,
       content,
     );
-    this.chatGateway.sendGroupMessage(group.members, message);
+    this.chatGateway.sendGroupMessage(group.members, group.name, message);
   }
 
   async joinGroup(userId: string, groupId: string, { password }: JoinGroupDto) {
@@ -427,12 +427,13 @@ export class ChatService {
       throw new ForbiddenException(`User has banned you`);
     }
 
+    const { name } = await this.userRepository.getProfile(senderId);
     const message = await this.chatRepository.createDmMessage(
       senderId,
       receiverId,
       content,
     );
-    this.chatGateway.sendDmMessage(message);
+    this.chatGateway.sendDmMessage(name, message);
   }
 
   async getDms(userId: string) {

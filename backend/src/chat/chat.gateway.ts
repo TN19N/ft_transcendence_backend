@@ -71,26 +71,34 @@ export class ChatGateway implements OnGatewayConnection {
     }
   }
 
-  sendDmMessage(message: MessageDm) {
-    if (this.connectedUsers.has(message.receiverId)) {
-      this.connectedUsers.get(message.receiverId).forEach((socket) => {
-        socket.emit('message', {
-          type: MessageType.DM,
-          payload: {
-            ...message,
-          },
+  sendDmMessage(senderName: string, message: MessageDm) {
+    for (const id of [message.senderId, message.receiverId]) {
+      if (this.connectedUsers.has(id)) {
+        this.connectedUsers.get(id).forEach((socket) => {
+          socket.emit('message', {
+            type: MessageType.DM,
+            payload: {
+              senderName: senderName,
+              ...message,
+            },
+          });
         });
-      });
+      }
     }
   }
 
-  sendGroupMessage(members: UserGroup[], message: MessageGroup) {
+  sendGroupMessage(
+    members: UserGroup[],
+    groupName: string,
+    message: MessageGroup,
+  ) {
     for (const member of members) {
       if (this.connectedUsers.has(member.userId)) {
         this.connectedUsers.get(member.userId).forEach((socket) => {
           socket.emit('message', {
             type: MessageType.GROUP,
             payload: {
+              groupName: groupName,
               ...message,
             },
           });
