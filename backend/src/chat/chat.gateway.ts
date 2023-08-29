@@ -71,7 +71,7 @@ export class ChatGateway implements OnGatewayConnection {
     }
   }
 
-  sendDmMessage(senderName: string, message: MessageDm) {
+  sendDmMessage(senderName: string, receiverName: string, message: MessageDm) {
     for (const id of [message.senderId, message.receiverId]) {
       if (this.connectedUsers.has(id)) {
         this.connectedUsers.get(id).forEach((socket) => {
@@ -79,7 +79,9 @@ export class ChatGateway implements OnGatewayConnection {
             type: MessageType.DM,
             payload: {
               senderName: senderName,
+              receiverName: receiverName,
               ...message,
+              id: undefined,
             },
           });
         });
@@ -100,6 +102,7 @@ export class ChatGateway implements OnGatewayConnection {
             payload: {
               groupName: groupName,
               ...message,
+              id: undefined,
             },
           });
         });

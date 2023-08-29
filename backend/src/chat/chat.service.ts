@@ -427,13 +427,17 @@ export class ChatService {
       throw new ForbiddenException(`User has banned you`);
     }
 
-    const { name } = await this.userRepository.getProfile(senderId);
+    const { name: senderName } = await this.userRepository.getProfile(senderId);
+    const { name: receiverName } =
+      await this.userRepository.getProfile(receiverId);
+
     const message = await this.chatRepository.createDmMessage(
       senderId,
       receiverId,
       content,
     );
-    this.chatGateway.sendDmMessage(name, message);
+
+    this.chatGateway.sendDmMessage(senderName, receiverName, message);
   }
 
   async getDms(userId: string) {
