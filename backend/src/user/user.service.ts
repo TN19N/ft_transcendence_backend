@@ -10,7 +10,7 @@ import * as QRcode from 'qrcode';
 import { ConfigurationService } from 'src/configuration/configuration.service';
 import { authenticator } from 'otplib';
 import { UpdateProfileDto } from './dto';
-import { Prisma, User } from '@prisma/client';
+import { Prisma, Status, User } from '@prisma/client';
 import * as fs from 'fs';
 import { GameSpeed, UserGateway } from './user.gateway';
 
@@ -27,7 +27,13 @@ export class UserService {
 
     if (reciver) {
       if (await this.userRepository.getFriendship(userId, reciverId)) {
-        await this.userGateway.sendGameInvite(reciverId, userId, speed);
+        const profile = await this.userRepository.getProfile(reciverId);
+
+        if (profile.status != Status.PLAYING) {
+          await this.userGateway.sendGameInvite(reciverId, userId, speed);
+        } else {
+          throw new ConflictException('User is in game');
+        }
       } else {
         throw new ForbiddenException("you can't send game invite to this user");
       }

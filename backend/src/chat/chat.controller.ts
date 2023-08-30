@@ -29,7 +29,7 @@ import { ChatRepository } from './chat.repository';
 import { RoleGuard } from './guard';
 import { Roles } from './decorator';
 import { Role } from '@prisma/client';
-import { ActionType, ChatGateway } from './chat.gateway';
+import { GroupActionType, ChatGateway } from './chat.gateway';
 
 @Controller('v1/chat')
 @UseGuards(JwtGuard, RoleGuard)
@@ -48,7 +48,7 @@ export class ChatController {
   async deleteGroup(@Param('groupId', ParseUUIDPipe) groupId: string) {
     const members = await this.chatRepository.getGroupMembers(groupId);
     await this.chatRepository.deleteGroup(groupId);
-    this.chatGateway.sendAction(ActionType.GROUP_DELETED, members, {
+    this.chatGateway.sendAction(GroupActionType.GROUP_DELETED, members, {
       groupId: groupId,
     });
   }

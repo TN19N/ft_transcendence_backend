@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ChatController } from './chat.controller';
 import { ChatRepository } from './chat.repository';
 import { ChatService } from './chat.service';
@@ -9,9 +9,13 @@ import { AuthenticationModule } from 'src/authentication/authentication.module';
 import { RoleGuard } from './guard';
 
 @Module({
-  imports: [DatabaseModule, UserModule, AuthenticationModule],
+  imports: [
+    DatabaseModule,
+    forwardRef(() => UserModule),
+    forwardRef(() => AuthenticationModule),
+  ],
   controllers: [ChatController],
   providers: [ChatRepository, ChatService, ChatGateway, RoleGuard],
-  exports: [ChatService],
+  exports: [ChatService, ChatGateway],
 })
 export class ChatModule {}

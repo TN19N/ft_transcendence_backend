@@ -12,6 +12,7 @@ import { AuthenticationService } from 'src/authentication/authentication.service
 import { UserRepository } from 'src/user/user.repository';
 import { UnauthorizedException } from '@nestjs/common';
 import { Status } from '@prisma/client';
+import { ChatGateway } from 'src/chat/chat.gateway';
 
 @WebSocketGateway({
   cors: process.env.FRONTEND_URL,
@@ -23,6 +24,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly gameService: GameService,
     private authenticationService: AuthenticationService,
     private userRepository: UserRepository,
+    private chatGateway: ChatGateway,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -35,6 +37,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.userRepository.updateProfile(id, {
       status: Status.PLAYING,
     });
+    await this.chatGateway.sendStatusAction(id, Status.PLAYING);
 
     const userId = client.handshake.query.userId as string;
     const speed = client.handshake.query.speed as string;
@@ -70,6 +73,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.userRepository.updateProfile(userId, {
       status: Status.ONLINE,
     });
+    await this.chatGateway.sendStatusAction(userId, Status.ONLINE);
 
     await this.gameService.disconnected(client, userId);
   }
