@@ -61,3 +61,8 @@ export type inviteDbId = {
   client: Socket;
   speed: string;
 };
+
+export type invitation = {
+  id: string;
+  speed: string;
+};

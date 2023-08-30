@@ -4,7 +4,7 @@ import { Socket } from 'socket.io';
 import RoomsGameHandler from './roomsHandler';
 import { UserRepository } from 'src/user/user.repository';
 import { AchievementType } from '@prisma/client';
-import { Room, UserData, inviteDbId, playerPair } from './PongTypes';
+import { Room, UserData, invitation, inviteDbId, playerPair } from './PongTypes';
 import { UserGateway } from 'src/user/user.gateway';
 
 @Injectable()
@@ -24,19 +24,21 @@ export class GameService {
     this.WaitInvite = [];
   }
 
-  onRowConnection(client: Socket, userDbId: string, id: string, speed: string) {
+  onRowConnection(client: Socket, data: invitation, id: string) {
     this.clients.push(id);
-    if (!userDbId && !speed) {
+
+    if (!data) {
       this.cheakIfInvited(client, id);
       return;
+    } else if (data.id && data.speed) {
+      this.WaitInvite.push({
+        id: data.id,
+        id2: id,
+        client: client,
+        speed: data.speed,
+      });
     }
-    this.WaitInvite.push({
-      id: userDbId,
-      id2: id,
-      client: client,
-      speed: speed,
-    });
-    this.userGateway.sendSignalToStartGame(userDbId);
+    this.userGateway.sendSignalToStartGame(data.id);
   }
 
   private async saveAchievements(id: string) {

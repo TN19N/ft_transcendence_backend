@@ -38,11 +38,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       status: Status.PLAYING,
     });
     await this.chatGateway.sendStatusAction(id, Status.PLAYING);
+  }
 
-    const userId = client.handshake.query.userId as string;
-    const speed = client.handshake.query.speed as string;
+  @SubscribeMessage('start')
+  async onConnection(@MessageBody() data, @ConnectedSocket() client: Socket) {
+    const id = await this.authenticationService.validateJwtWbSocket(client);
 
-    this.gameService.onRowConnection(client, userId, id, speed);
+    if (!id) {
+      return this.disconnect(client);
+    }
+
+    this.gameService.onRowConnection(client, data, id);
   }
 
   @SubscribeMessage('key-pressed')
@@ -65,6 +71,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     this.gameService.onNewConnection(client, id, speed);
+  }
+
+  @SubscribeMessage('dis')
+  disconnect_it(@ConnectedSocket() client: Socket) {
+    client.disconnect();
   }
 
   async handleDisconnect(client: Socket) {
