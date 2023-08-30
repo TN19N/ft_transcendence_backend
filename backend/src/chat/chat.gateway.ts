@@ -4,16 +4,18 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { MessageDm, MessageGroup, UserGroup } from '@prisma/client';
+import { MessageDm, MessageGroup, Status, UserGroup } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { AuthenticationService } from 'src/authentication/authentication.service';
+import { UserRepository } from 'src/user/user.repository';
+import { ChatRepository } from './chat.repository';
 
 enum MessageType {
   DM = 'dm',
   GROUP = 'group',
 }
 
-export enum ActionType {
+export enum GroupActionType {
   USER_BANNED = 'USER_BANNED',
   USER_UNBAN = 'USER_UNBANNED',
   USER_MUTED = 'USER_MUTED',
@@ -33,7 +35,11 @@ export enum ActionType {
   namespace: 'chat',
 })
 export class ChatGateway implements OnGatewayConnection {
-  constructor(private authenticationService: AuthenticationService) {}
+  constructor(
+    private authenticationService: AuthenticationService,
+    private userRepository: UserRepository,
+    private chatRepository: ChatRepository,
+  ) {}
 
   @WebSocketServer()
   server: Server;
@@ -110,7 +116,7 @@ export class ChatGateway implements OnGatewayConnection {
     }
   }
 
-  sendAction(actionType: ActionType, members: any[], payload: object) {
+  sendAction(actionType: GroupActionType, members: any[], payload: object) {
     for (const member of members) {
       member.userId = member.userId ?? member.user?.id;
       if (this.connectedUsers.has(member.userId)) {
@@ -118,6 +124,35 @@ export class ChatGateway implements OnGatewayConnection {
           socket.emit('action', {
             actionType,
             payload,
+          });
+        });
+      }
+    }
+  }
+
+  async sendStatusAction(userId: string, status: Status) {
+    const groups = await this.chatRepository.getJoinedGroups(userId);
+    const friends = await this.userRepository.getFriends(userId);
+
+    const ids: Set<string> = new Set();
+    for (const { id: groupId } of groups) {
+      const members = await this.chatRepository.getGroupMembers(groupId);
+      for (const {
+        user: { id },
+      } of members) {
+        ids.add(id);
+      }
+    }
+    for (const { id } of friends) {
+      ids.add(id);
+    }
+
+    for (const id of ids) {
+      if (this.connectedUsers.has(id)) {
+        this.connectedUsers.get(id).forEach((socket) => {
+          socket.emit('status', {
+            status: status,
+            userId: userId,
           });
         });
       }

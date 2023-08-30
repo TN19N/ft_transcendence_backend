@@ -8,7 +8,7 @@ import {
 import { ChatRepository } from './chat.repository';
 import { UserRepository } from 'src/user/user.repository';
 import { GroupType, MessageDm, Prisma, Role } from '@prisma/client';
-import { ActionType, ChatGateway } from './chat.gateway';
+import { GroupActionType, ChatGateway } from './chat.gateway';
 import {
   CreateGroupDto,
   JoinGroupDto,
@@ -40,11 +40,15 @@ export class ChatService {
 
     await this.chatRepository.transferOwnership(userId, newOwnerId, groupId);
     const members = await this.chatRepository.getGroupMembers(groupId);
-    this.chatGateway.sendAction(ActionType.OWNERSHIP_TRANSFERMED, members, {
-      from: userId,
-      to: newOwnerId,
-      groupId: groupId,
-    });
+    this.chatGateway.sendAction(
+      GroupActionType.OWNERSHIP_TRANSFERMED,
+      members,
+      {
+        from: userId,
+        to: newOwnerId,
+        groupId: groupId,
+      },
+    );
   }
 
   async leaveGroup(userId: string, groupId: string) {
@@ -56,7 +60,7 @@ export class ChatService {
 
     const members = await this.chatRepository.getGroupMembers(groupId);
     await this.chatRepository.deleteUserGroup(userId, groupId);
-    this.chatGateway.sendAction(ActionType.USER_LEAVED, members, {
+    this.chatGateway.sendAction(GroupActionType.USER_LEAVED, members, {
       userId: userId,
       groupId: groupId,
     });
@@ -85,7 +89,7 @@ export class ChatService {
     );
 
     const members = await this.chatRepository.getGroupMembers(groupId);
-    this.chatGateway.sendAction(ActionType.USER_UNMUTED, members, {
+    this.chatGateway.sendAction(GroupActionType.USER_UNMUTED, members, {
       userId: userToUnMuteId,
       groupId: groupId,
     });
@@ -124,7 +128,7 @@ export class ChatService {
     );
 
     const members = await this.chatRepository.getGroupMembers(groupId);
-    this.chatGateway.sendAction(ActionType.USER_MUTED, members, {
+    this.chatGateway.sendAction(GroupActionType.USER_MUTED, members, {
       userId: userToMute,
       groupId: groupId,
     });
@@ -159,7 +163,7 @@ export class ChatService {
     );
 
     const members = await this.chatRepository.getGroupMembers(groupId);
-    this.chatGateway.sendAction(ActionType.USER_DOWNGRADED, members, {
+    this.chatGateway.sendAction(GroupActionType.USER_DOWNGRADED, members, {
       userId: memberToDowngradeId,
       groupId: groupId,
     });
@@ -194,7 +198,7 @@ export class ChatService {
     );
 
     const members = await this.chatRepository.getGroupMembers(groupId);
-    this.chatGateway.sendAction(ActionType.USER_UPGRADED, members, {
+    this.chatGateway.sendAction(GroupActionType.USER_UPGRADED, members, {
       userId: memberToUpgradeId,
       groupId: groupId,
     });
@@ -210,7 +214,7 @@ export class ChatService {
     await this.userRepository.unBanUserFromGroup(userToUnBanId, groupId);
 
     const members = await this.chatRepository.getGroupMembers(groupId);
-    this.chatGateway.sendAction(ActionType.USER_UNBAN, members, {
+    this.chatGateway.sendAction(GroupActionType.USER_UNBAN, members, {
       userId: userToUnBanId,
       groupId: groupId,
     });
@@ -242,7 +246,7 @@ export class ChatService {
     const members = await this.chatRepository.getGroupMembers(groupId);
     await this.userRepository.banUserFromGroup(userToBanId, groupId);
 
-    this.chatGateway.sendAction(ActionType.USER_BANNED, members, {
+    this.chatGateway.sendAction(GroupActionType.USER_BANNED, members, {
       userId: userToBanId,
       groupId: groupId,
     });
@@ -261,7 +265,7 @@ export class ChatService {
     await this.chatRepository.acceptGroupInvite(userId, groupId);
 
     const members = await this.chatRepository.getGroupMembers(groupId);
-    this.chatGateway.sendAction(ActionType.USER_JOINED, members, {
+    this.chatGateway.sendAction(GroupActionType.USER_JOINED, members, {
       userId: userId,
       groupId: groupId,
     });
@@ -317,10 +321,14 @@ export class ChatService {
 
     try {
       await this.chatRepository.updateGroup(groupId, name, type, password);
-      this.chatGateway.sendAction(ActionType.GROUP_UPDATED, group.members, {
-        groupId: groupId,
-        data: { name, type },
-      });
+      this.chatGateway.sendAction(
+        GroupActionType.GROUP_UPDATED,
+        group.members,
+        {
+          groupId: groupId,
+          data: { name, type },
+        },
+      );
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -375,7 +383,7 @@ export class ChatService {
 
     await this.chatRepository.addUserToGroup(userId, groupId);
     const members = await this.chatRepository.getGroupMembers(groupId);
-    this.chatGateway.sendAction(ActionType.USER_JOINED, members, {
+    this.chatGateway.sendAction(GroupActionType.USER_JOINED, members, {
       userId: userId,
     });
   }

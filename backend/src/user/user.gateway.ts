@@ -8,6 +8,7 @@ import { Server, Socket } from 'socket.io';
 import { AuthenticationService } from 'src/authentication/authentication.service';
 import { UserRepository } from './user.repository';
 import { Status } from '@prisma/client';
+import { ChatGateway } from 'src/chat/chat.gateway';
 
 export enum GameSpeed {
   SLOW = 'Slow',
@@ -35,6 +36,7 @@ export class UserGateway implements OnGatewayConnection {
   constructor(
     private authenticationService: AuthenticationService,
     private userRepository: UserRepository,
+    private chatGateway: ChatGateway,
   ) {}
 
   async handleConnection(socket: Socket) {
@@ -55,9 +57,11 @@ export class UserGateway implements OnGatewayConnection {
       }
       if (this.connectedUsers.get(userId).length === 0) {
         this.connectedUsers.delete(userId);
+
         await this.userRepository.updateProfile(userId, {
           status: Status.OFFLINE,
         });
+        await this.chatGateway.sendStatusAction(userId, Status.OFFLINE);
       }
     });
 
@@ -68,9 +72,11 @@ export class UserGateway implements OnGatewayConnection {
       ]);
     } else {
       this.connectedUsers.set(userId, [socket]);
+
       await this.userRepository.updateProfile(userId, {
         status: Status.ONLINE,
       });
+      await this.chatGateway.sendStatusAction(userId, Status.ONLINE);
     }
   }
 

@@ -15,7 +15,7 @@ import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class UserRepository {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private databaseService: DatabaseService) {}
 
   async createAchievement(userId: string, achievementType: AchievementType) {
     let title = '';
