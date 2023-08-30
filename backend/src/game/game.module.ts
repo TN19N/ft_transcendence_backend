@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { GameController } from './game.controller';
 import { GameService } from './game.service';
 import { GameGateway } from './game.gateway';
@@ -9,8 +9,14 @@ import { AuthenticationModule } from 'src/authentication/authentication.module';
 import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
-  imports: [UserModule, AuthenticationModule, DatabaseModule, ChatModule],
+  imports: [
+    forwardRef(() => UserModule),
+    forwardRef(() => AuthenticationModule),
+    DatabaseModule,
+    ChatModule,
+  ],
   controllers: [GameController],
   providers: [GameService, GameGateway, GameRepository],
+  exports: [GameService],
 })
 export class GameModule {}

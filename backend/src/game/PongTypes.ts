@@ -58,8 +58,9 @@ export type RoomInfo = {
 export type inviteDbId = {
   id: string;
   id2: string;
-  client: Socket;
+  client?: Socket;
   speed: string;
+  time: Date;
 };
 
 export type invitation = {
