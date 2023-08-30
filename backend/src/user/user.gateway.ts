@@ -1,4 +1,3 @@
-import { UnauthorizedException } from '@nestjs/common';
 import {
   OnGatewayConnection,
   WebSocketGateway,
@@ -142,7 +141,7 @@ export class UserGateway implements OnGatewayConnection {
   }
 
   private disconnect(socket: Socket) {
-    socket.emit('error', new UnauthorizedException());
+    socket.emit('error', 'Unauthorized');
     socket.disconnect(true);
   }
 }

@@ -7,11 +7,13 @@ import { ConfigurationModule } from 'src/configuration/configuration.module';
 import { AuthenticationModule } from 'src/authentication/authentication.module';
 import { UserGateway } from './user.gateway';
 import { ChatModule } from 'src/chat/chat.module';
+import { GameModule } from 'src/game/game.module';
 
 @Module({
   imports: [
     DatabaseModule,
     ConfigurationModule,
+    forwardRef(() => GameModule),
     forwardRef(() => ChatModule),
     forwardRef(() => AuthenticationModule),
   ],

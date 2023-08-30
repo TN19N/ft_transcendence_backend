@@ -13,6 +13,7 @@ import { UpdateProfileDto } from './dto';
 import { Prisma, Status, User } from '@prisma/client';
 import * as fs from 'fs';
 import { GameSpeed, UserGateway } from './user.gateway';
+import { GameService } from 'src/game/game.service';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,7 @@ export class UserService {
     private userGateway: UserGateway,
     private userRepository: UserRepository,
     private configurationService: ConfigurationService,
+    private gameService: GameService,
   ) {}
 
   async sendGameInvite(userId: string, reciverId: string, speed: GameSpeed) {
@@ -30,6 +32,7 @@ export class UserService {
         const profile = await this.userRepository.getProfile(reciverId);
 
         if (profile.status != Status.PLAYING) {
+          this.gameService.createNewInvite(userId, reciverId, speed.toString());
           await this.userGateway.sendGameInvite(reciverId, userId, speed);
         } else {
           throw new ConflictException('User is in game');

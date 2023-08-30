@@ -10,22 +10,35 @@ import { Socket } from 'socket.io';
 import { GameService } from './game.service';
 import { AuthenticationService } from 'src/authentication/authentication.service';
 import { UserRepository } from 'src/user/user.repository';
-import { UnauthorizedException } from '@nestjs/common';
+import { OnModuleInit } from '@nestjs/common';
 import { Status } from '@prisma/client';
 import { ChatGateway } from 'src/chat/chat.gateway';
+import { schedule } from 'node-cron';
 
 @WebSocketGateway({
   cors: process.env.FRONTEND_URL,
   credentials: true,
   namespace: 'game',
 })
-export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class GameGateway
+  implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect
+{
   constructor(
-    private readonly gameService: GameService,
+    private gameService: GameService,
     private authenticationService: AuthenticationService,
     private userRepository: UserRepository,
     private chatGateway: ChatGateway,
   ) {}
+
+  onModuleInit() {
+    schedule('*/1 * * * * *', () => {
+      this.gameService.WaitInvite = this.gameService.WaitInvite.filter(
+        ({ time }) => {
+          return new Date().getTime() - time.getTime() <= 5000;
+        },
+      );
+    });
+  }
 
   async handleConnection(client: Socket) {
     const id = await this.authenticationService.validateJwtWbSocket(client);
@@ -37,12 +50,21 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.userRepository.updateProfile(id, {
       status: Status.PLAYING,
     });
+
     await this.chatGateway.sendStatusAction(id, Status.PLAYING);
+  }
 
-    const userId = client.handshake.query.userId as string;
-    const speed = client.handshake.query.speed as string;
+  @SubscribeMessage('start')
+  async onConnection(@MessageBody() data, @ConnectedSocket() client: Socket) {
+    const id = await this.authenticationService.validateJwtWbSocket(client);
 
-    this.gameService.onRowConnection(client, userId, id, speed);
+    if (!id) {
+      return this.disconnect(client);
+    }
+
+    if (!this.gameService.onRowConnection(client, data, id)) {
+      this.disconnect(client);
+    }
   }
 
   @SubscribeMessage('key-pressed')
@@ -67,8 +89,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.gameService.onNewConnection(client, id, speed);
   }
 
+  @SubscribeMessage('dis')
+  disconnect_it(@ConnectedSocket() client: Socket) {
+    client.disconnect();
+  }
+
   async handleDisconnect(client: Socket) {
     const userId = await this.authenticationService.validateJwtWbSocket(client);
+
+    if (!userId) {
+      return;
+    }
 
     await this.userRepository.updateProfile(userId, {
       status: Status.ONLINE,
@@ -79,7 +110,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private disconnect(socket: Socket) {
-    socket.emit('error', new UnauthorizedException());
+    socket.emit('error', 'Unauthorized');
     socket.disconnect(true);
   }
 }

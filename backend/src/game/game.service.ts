@@ -4,7 +4,13 @@ import { Socket } from 'socket.io';
 import RoomsGameHandler from './roomsHandler';
 import { UserRepository } from 'src/user/user.repository';
 import { AchievementType } from '@prisma/client';
-import { Room, UserData, inviteDbId, playerPair } from './PongTypes';
+import {
+  Room,
+  UserData,
+  invitation,
+  inviteDbId,
+  playerPair,
+} from './PongTypes';
 import { UserGateway } from 'src/user/user.gateway';
 
 @Injectable()
@@ -12,7 +18,7 @@ export class GameService {
   private queue: QueueGameHandler;
   private room: RoomsGameHandler;
   private clients: string[];
-  private WaitInvite: inviteDbId[];
+  WaitInvite: inviteDbId[];
 
   constructor(
     private userRepository: UserRepository,
@@ -24,19 +30,34 @@ export class GameService {
     this.WaitInvite = [];
   }
 
-  onRowConnection(client: Socket, userDbId: string, id: string, speed: string) {
+  onRowConnection(client: Socket, data: invitation, id: string) {
     this.clients.push(id);
-    if (!userDbId && !speed) {
-      this.cheakIfInvited(client, id);
-      return;
+
+    if (!data) {
+      return this.cheakIfInvited(client, id);
+    } else if (data.id && data.speed) {
+      let founded = false;
+      this.WaitInvite.forEach((invite) => {
+        if (invite.id2 === id) {
+          founded = true;
+          invite.client = client;
+        }
+      });
+      if (founded) {
+        this.userGateway.sendSignalToStartGame(data.id);
+      }
+      return founded;
     }
+    return false;
+  }
+
+  createNewInvite(senderId: string, recieverId: string, speed: string) {
     this.WaitInvite.push({
-      id: userDbId,
-      id2: id,
-      client: client,
+      id: senderId,
+      id2: recieverId,
       speed: speed,
+      time: new Date(),
     });
-    this.userGateway.sendSignalToStartGame(userDbId);
   }
 
   private async saveAchievements(id: string) {
@@ -80,7 +101,7 @@ export class GameService {
     let speed: string | null = null;
 
     this.WaitInvite = this.WaitInvite.filter((item) => {
-      if (item.id === id) {
+      if (item.client && item.id === id) {
         pair.p2 = item.client;
         pair.pu2 = item.id2;
         speed = item.speed;
@@ -90,12 +111,15 @@ export class GameService {
 
     if (speed) {
       this.room.onNewMatch(pair, speed);
+      return true;
     }
+    return false;
   }
 
   async disconnected(client: Socket, id: string) {
     this.clients = this.clients.filter((item) => item !== id);
-    const res: Room = await this.room.onDisconnect(client);
+
+    const res: Room | null = await this.room.onDisconnect(client);
     if (res) {
       await this.saveGameRecord(res.p1, res.p2);
       return;
