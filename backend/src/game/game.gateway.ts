@@ -51,6 +51,8 @@ export class GameGateway
       return this.disconnect(client);
     }
 
+    console.log(' game connected: ', id);
+
     await this.userRepository.updateProfile(id, {
       status: Status.PLAYING,
     });
@@ -96,17 +98,14 @@ export class GameGateway
     this.gameService.onNewConnection(client, id, speed);
   }
 
-  @SubscribeMessage('dis')
-  disconnect_it(@ConnectedSocket() client: Socket) {
-    client.disconnect();
-  }
-
   async handleDisconnect(client: Socket) {
     const userId = await this.authenticationService.validateJwtWbSocket(client);
 
     if (!userId) {
       return;
     }
+
+    console.log('game deisconnect: ', userId);
 
     await this.userRepository.updateProfile(userId, {
       status: Status.ONLINE,
