@@ -8,6 +8,8 @@ import { Server, Socket } from 'socket.io';
 import { AuthenticationService } from 'src/authentication/authentication.service';
 import { UserRepository } from 'src/user/user.repository';
 import { ChatRepository } from './chat.repository';
+import { WsExceptionsFilter } from 'src/common';
+import { UseFilters } from '@nestjs/common';
 
 enum MessageType {
   DM = 'dm',
@@ -33,6 +35,7 @@ export enum GroupActionType {
   credentials: true,
   namespace: 'chat',
 })
+@UseFilters(new WsExceptionsFilter())
 export class ChatGateway implements OnGatewayConnection {
   constructor(
     private authenticationService: AuthenticationService,

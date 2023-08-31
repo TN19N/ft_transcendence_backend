@@ -10,18 +10,20 @@ import { Socket } from 'socket.io';
 import { GameService } from './game.service';
 import { AuthenticationService } from 'src/authentication/authentication.service';
 import { UserRepository } from 'src/user/user.repository';
-import { OnModuleInit, ParseEnumPipe } from '@nestjs/common';
+import { OnModuleInit, ParseEnumPipe, UseFilters } from '@nestjs/common';
 import { Status } from '@prisma/client';
 import { ChatGateway } from 'src/chat/chat.gateway';
 import { schedule } from 'node-cron';
 import { InvitationDto } from './dto/invitation.dto';
 import { GameSpeed } from 'src/user/user.gateway';
+import { WsExceptionsFilter } from 'src/common';
 
 @WebSocketGateway({
   cors: process.env.FRONTEND_URL,
   credentials: true,
   namespace: 'game',
 })
+@UseFilters(new WsExceptionsFilter())
 export class GameGateway
   implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect
 {
