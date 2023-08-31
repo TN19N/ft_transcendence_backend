@@ -8,6 +8,8 @@ import { AuthenticationService } from 'src/authentication/authentication.service
 import { UserRepository } from './user.repository';
 import { Status } from '@prisma/client';
 import { ChatGateway } from 'src/chat/chat.gateway';
+import { WsExceptionsFilter } from 'src/common';
+import { UseFilters } from '@nestjs/common';
 
 export enum GameSpeed {
   SLOW = 'Slow',
@@ -26,6 +28,7 @@ enum NotificationType {
   credentials: true,
   namespace: 'user',
 })
+@UseFilters(new WsExceptionsFilter())
 export class UserGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
