@@ -176,7 +176,7 @@ export class ChatController {
     await this.chatService.inviteToGroup(groupId, userId, userToInviteId);
   }
 
-  @Post('group/:groupId/acceptInvite')
+  @Put('group/:groupId/acceptInvite')
   @HttpCode(HttpStatus.OK)
   async acceptInvite(
     @GetUserId() userId: string,

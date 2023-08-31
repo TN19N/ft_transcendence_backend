@@ -293,6 +293,7 @@ export class ChatService {
 
     try {
       await this.chatRepository.createGroupInvite(receiverId, groupId);
+      this.userGateway.sendGroupInvite(receiverId, groupId, group.name);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -302,8 +303,6 @@ export class ChatService {
 
       throw error;
     }
-
-    this.userGateway.sendGroupInvite(receiverId, groupId, group.name);
   }
 
   async updateGroup(groupId: string, { name, type, password }: UpdateGroupDto) {
