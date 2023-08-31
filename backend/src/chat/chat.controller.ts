@@ -228,8 +228,6 @@ export class ChatController {
     @Param('groupId', ParseUUIDPipe) groupId: string,
     @Body() updateGroupDto: UpdateGroupDto,
   ) {
-    console.log('groupId: ', groupId);
-    console.log('data: ', updateGroupDto);
     await this.chatService.updateGroup(groupId, updateGroupDto);
   }
 

@@ -45,8 +45,6 @@ export class AuthenticationService {
           }
         }
 
-        console.log(' Erororoorororoororo!!! ');
-
         throw error;
       }
       break;
