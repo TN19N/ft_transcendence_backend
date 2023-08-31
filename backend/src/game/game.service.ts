@@ -4,14 +4,9 @@ import { Socket } from 'socket.io';
 import RoomsGameHandler from './roomsHandler';
 import { UserRepository } from 'src/user/user.repository';
 import { AchievementType } from '@prisma/client';
-import {
-  Room,
-  UserData,
-  invitation,
-  inviteDbId,
-  playerPair,
-} from './PongTypes';
+import { Room, UserData, inviteDbId, playerPair } from './PongTypes';
 import { UserGateway } from 'src/user/user.gateway';
+import { InvitationDto } from './dto/invitation.dto';
 
 @Injectable()
 export class GameService {
@@ -30,7 +25,7 @@ export class GameService {
     this.WaitInvite = [];
   }
 
-  onRowConnection(client: Socket, data: invitation, id: string) {
+  onRowConnection(client: Socket, data: InvitationDto, id: string) {
     this.clients.push(id);
 
     if (!data) {

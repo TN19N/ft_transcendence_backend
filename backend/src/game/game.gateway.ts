@@ -10,10 +10,12 @@ import { Socket } from 'socket.io';
 import { GameService } from './game.service';
 import { AuthenticationService } from 'src/authentication/authentication.service';
 import { UserRepository } from 'src/user/user.repository';
-import { OnModuleInit } from '@nestjs/common';
+import { OnModuleInit, ParseEnumPipe } from '@nestjs/common';
 import { Status } from '@prisma/client';
 import { ChatGateway } from 'src/chat/chat.gateway';
 import { schedule } from 'node-cron';
+import { InvitationDto } from './dto/invitation.dto';
+import { GameSpeed } from 'src/user/user.gateway';
 
 @WebSocketGateway({
   cors: process.env.FRONTEND_URL,
@@ -47,6 +49,8 @@ export class GameGateway
       return this.disconnect(client);
     }
 
+    console.log('game socket connected: ', id);
+
     await this.userRepository.updateProfile(id, {
       status: Status.PLAYING,
     });
@@ -55,7 +59,10 @@ export class GameGateway
   }
 
   @SubscribeMessage('start')
-  async onConnection(@MessageBody() data, @ConnectedSocket() client: Socket) {
+  async onConnection(
+    @MessageBody() data: InvitationDto,
+    @ConnectedSocket() client: Socket,
+  ) {
     const id = await this.authenticationService.validateJwtWbSocket(client);
 
     if (!id) {
@@ -78,7 +85,7 @@ export class GameGateway
   @SubscribeMessage('game-speed')
   async clientSpeedHandler(
     @ConnectedSocket() client: Socket,
-    @MessageBody() speed: string,
+    @MessageBody(new ParseEnumPipe(GameSpeed)) speed: string,
   ) {
     const id = await this.authenticationService.validateJwtWbSocket(client);
 
@@ -100,6 +107,8 @@ export class GameGateway
     if (!userId) {
       return;
     }
+
+    console.log('game socket disconnected: ', userId);
 
     await this.userRepository.updateProfile(userId, {
       status: Status.ONLINE,

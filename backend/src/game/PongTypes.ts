@@ -62,8 +62,3 @@ export type inviteDbId = {
   speed: string;
   time: Date;
 };
-
-export type invitation = {
-  id: string;
-  speed: string;
-};
