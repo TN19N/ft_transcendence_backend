@@ -332,7 +332,6 @@ export class ChatService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          console.log(error);
           throw new ConflictException('Group with this name already exists');
         }
       }
