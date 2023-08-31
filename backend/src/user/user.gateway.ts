@@ -92,7 +92,7 @@ export class UserGateway implements OnGatewayConnection {
         socket.emit('notification', {
           type: NotificationType.GAME_INVITE,
           payload: {
-            senderId: senderId,
+            id: senderId,
             speed: speed,
             name: name,
           },
