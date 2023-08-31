@@ -104,7 +104,7 @@ export class UserGateway implements OnGatewayConnection {
         socket.emit('notification', {
           type: NotificationType.GROUP_INVITE,
           payload: {
-            groupId: groupId,
+            id: groupId,
             name: name,
           },
         });
@@ -119,7 +119,7 @@ export class UserGateway implements OnGatewayConnection {
         socket.emit('notification', {
           type: NotificationType.FRIEND_REQUEST,
           payload: {
-            senderId: senderId,
+            id: senderId,
             name: name,
           },
         });
