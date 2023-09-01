@@ -46,6 +46,10 @@ export class GameService {
     return false;
   }
 
+  checkInvite(senderId: string) {
+    return this.WaitInvite.find((invite) => invite.id === senderId);
+  }
+
   createNewInvite(senderId: string, recieverId: string, speed: string) {
     this.WaitInvite.push({
       id: senderId,
