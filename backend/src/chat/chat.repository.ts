@@ -311,6 +311,7 @@ export class ChatRepository {
         name: { startsWith: query },
         type: { not: GroupType.PRIVATE },
         members: { none: { userId: userId } },
+        bannedUsers: { none: { id: userId } },
       },
       select: {
         id: true,
