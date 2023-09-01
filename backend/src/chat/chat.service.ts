@@ -417,6 +417,8 @@ export class ChatService {
         GroupActionType.USER_JOINED,
         [{ userId: userId }],
         {
+          groupName: name,
+          type: type,
           userId: userId,
           name: username,
           groupId: groupId,
