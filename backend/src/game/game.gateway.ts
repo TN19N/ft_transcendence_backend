@@ -48,10 +48,11 @@ export class GameGateway
     const id = await this.authenticationService.validateJwtWbSocket(client);
 
     if (!id) {
+      console.log('game token is not valid!');
       return this.disconnect(client);
     }
 
-    console.log(' game connected: ', id);
+    console.log('game connected: ', id);
 
     await this.userRepository.updateProfile(id, {
       status: Status.PLAYING,
@@ -105,7 +106,7 @@ export class GameGateway
       return;
     }
 
-    console.log('game deisconnect: ', userId);
+    console.log('game disconnect: ', userId);
 
     await this.userRepository.updateProfile(userId, {
       status: Status.ONLINE,
@@ -116,6 +117,7 @@ export class GameGateway
   }
 
   private disconnect(socket: Socket) {
+    console.log('game disconnect with error');
     socket.emit('error', 'Unauthorized');
     socket.disconnect(true);
   }

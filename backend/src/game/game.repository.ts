@@ -28,6 +28,9 @@ export class GameRepository {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 }

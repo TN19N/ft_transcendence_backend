@@ -6,6 +6,7 @@ import { Socket } from 'socket.io';
 export class WsExceptionsFilter extends BaseWsExceptionFilter {
   catch(_: unknown, host: ArgumentsHost) {
     const client = host.switchToWs().getClient<Socket>();
+    console.log('filter error catched');
     client.emit('error', 'Unauthorized');
     client.disconnect();
   }
