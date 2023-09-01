@@ -51,10 +51,10 @@ export default class RoomsGameHandler {
   endGame(room: Room) {
     if (room.p1.score > room.p2.score) {
       room.p2.socket.emit('delay', 'You Lost');
-      room.p2.socket.disconnect(true);
+      room.p2.socket.disconnect();
     } else {
       room.p1.socket.emit('delay', 'You Lost');
-      room.p1.socket.disconnect(true);
+      room.p1.socket.disconnect();
     }
   }
 
@@ -105,7 +105,7 @@ export default class RoomsGameHandler {
     if (room.interval) clearInterval(room.interval);
     this.Rooms = this.Rooms.filter((item) => item !== room);
     oClinet.socket.emit('delay', 'You win');
-    oClinet.socket.disconnect(true);
+    oClinet.socket.disconnect();
     return room;
   }
 }
