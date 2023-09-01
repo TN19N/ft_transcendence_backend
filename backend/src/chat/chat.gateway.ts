@@ -57,10 +57,10 @@ export class ChatGateway implements OnGatewayConnection {
       return this.disconnect(socket);
     }
 
-    console.log('chat connected: ', userId);
+    console.log('chat connected: ', userId, ', socketId: ', socket.id);
 
     socket.on('disconnect', async () => {
-      console.log('chat disconnected: ', userId);
+      console.log('chat disconnected: ', userId, ', socketId: ', socket.id);
       for (const [key, value] of this.connectedUsers.entries()) {
         if (value.includes(socket)) {
           this.connectedUsers.set(

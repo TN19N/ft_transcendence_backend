@@ -52,7 +52,7 @@ export class GameGateway
       return this.disconnect(client);
     }
 
-    console.log('game connected: ', id);
+    console.log('game connected: ', id, ', socketId: ', client.id);
 
     await this.userRepository.updateProfile(id, {
       status: Status.PLAYING,
@@ -106,7 +106,7 @@ export class GameGateway
       return;
     }
 
-    console.log('game disconnect: ', userId);
+    console.log('game disconnect: ', userId, ', socketId: ', client.id);
 
     await this.userRepository.updateProfile(userId, {
       status: Status.ONLINE,

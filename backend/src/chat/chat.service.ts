@@ -387,6 +387,7 @@ export class ChatService {
     this.chatGateway.sendAction(GroupActionType.USER_JOINED, members, {
       userId: userId,
       name: name,
+      groupId: groupId,
     });
   }
 
