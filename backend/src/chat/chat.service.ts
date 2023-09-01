@@ -427,6 +427,7 @@ export class ChatService {
         members.push({ userId: userId });
       }
       this.chatGateway.sendAction(GroupActionType.GROUP_CREATED, members, {
+        ownerId: userId,
         groupId,
         name,
         type,
