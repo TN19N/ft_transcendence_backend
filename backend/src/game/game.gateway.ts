@@ -119,6 +119,6 @@ export class GameGateway
   private disconnect(socket: Socket) {
     console.log('game disconnect with error');
     socket.emit('error', 'Unauthorized');
-    socket.disconnect(true);
+    socket.disconnect();
   }
 }

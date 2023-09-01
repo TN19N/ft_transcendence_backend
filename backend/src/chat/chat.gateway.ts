@@ -61,6 +61,7 @@ export class ChatGateway implements OnGatewayConnection {
 
     socket.on('disconnect', async () => {
       console.log('chat disconnected: ', userId, ', socketId: ', socket.id);
+
       for (const [key, value] of this.connectedUsers.entries()) {
         if (value.includes(socket)) {
           this.connectedUsers.set(
@@ -176,6 +177,6 @@ export class ChatGateway implements OnGatewayConnection {
   private disconnect(socket: Socket) {
     console.log('chat disconnect with error ');
     socket.emit('error', 'Unauthorized');
-    socket.disconnect(true);
+    socket.disconnect();
   }
 }

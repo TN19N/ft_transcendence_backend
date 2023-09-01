@@ -151,6 +151,6 @@ export class UserGateway implements OnGatewayConnection {
   private disconnect(socket: Socket) {
     console.log('user disconnect with error ');
     socket.emit('error', 'Unauthorized');
-    socket.disconnect(true);
+    socket.disconnect();
   }
 }
