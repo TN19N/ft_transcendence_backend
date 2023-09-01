@@ -400,7 +400,27 @@ export class ChatService {
     }
 
     try {
-      await this.chatRepository.createGroup(userId, name, type, password);
+      const { id: groupId } = await this.chatRepository.createGroup(
+        userId,
+        name,
+        type,
+        password,
+      );
+      this.chatGateway.sendAction(
+        GroupActionType.USER_JOINED,
+        [{ userId: userId }],
+        {
+          userId: userId,
+          groupId: groupId,
+        },
+      );
+      if (type != GroupType.PRIVATE) {
+        this.chatGateway.sendAction(GroupActionType.GROUP_CREATED, [], {
+          groupId,
+          name,
+          type,
+        });
+      }
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
