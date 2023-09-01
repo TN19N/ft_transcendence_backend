@@ -49,10 +49,10 @@ export class UserGateway implements OnGatewayConnection {
       return this.disconnect(socket);
     }
 
-    console.log('user connected: ', userId);
+    console.log('user connected: ', userId, ', socketId: ', socket.id);
 
     socket.on('disconnect', async () => {
-      console.log('user disconnected: ', userId);
+      console.log('user disconnected: ', userId, ', socketId: ', socket.id);
 
       for (const [key, value] of this.connectedUsers.entries()) {
         if (value.includes(socket)) {
