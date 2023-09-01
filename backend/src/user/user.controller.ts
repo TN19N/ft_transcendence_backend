@@ -34,6 +34,7 @@ import { diskStorage } from 'multer';
 import { AchievementType, User } from '@prisma/client';
 import { Response } from 'express';
 import { GameSpeed, UserGateway } from './user.gateway';
+import { GameService } from 'src/game/game.service';
 
 @Controller('v1/user')
 @ApiTags('v1/user')
@@ -45,6 +46,7 @@ export class UserController {
     private userRepository: UserRepository,
     private authenticationService: AuthenticationService,
     private userGateway: UserGateway,
+    private gameService: GameService,
   ) {}
 
   @Get('isFriendRequestSent')
@@ -91,7 +93,11 @@ export class UserController {
     const reciver = await this.userRepository.getUserById(reciverId);
 
     if (reciver) {
-      this.userGateway.sendSignalToStopTimer(reciverId);
+      if (this.gameService.checkInvite(reciverId)) {
+        this.userGateway.sendSignalToStopTimer(reciverId);
+      } else {
+        throw new NotFoundException('game invite is expired');
+      }
     } else {
       throw new NotFoundException('user not found');
     }
