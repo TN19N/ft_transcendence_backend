@@ -124,8 +124,8 @@ export class ChatGateway implements OnGatewayConnection {
   }
 
   sendAction(actionType: GroupActionType, members: any[], payload: object) {
-    if (actionType === GroupActionType.GROUP_CREATED) {
-      for (const [id, _] of this.connectedUsers) {
+    if (actionType === GroupActionType.GROUP_CREATED && members.length === 0) {
+      for (const id of this.connectedUsers.keys()) {
         members.push({
           userId: id,
         });
