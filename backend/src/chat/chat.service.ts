@@ -129,7 +129,7 @@ export class ChatService {
 
     const members = await this.chatRepository.getGroupMembers(groupId);
     this.chatGateway.sendAction(GroupActionType.USER_MUTED, members, {
-      userId: userToMute,
+      userId: userToMuteId,
       groupId: groupId,
     });
   }
