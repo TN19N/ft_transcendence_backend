@@ -418,6 +418,7 @@ export class ChatService {
         [{ userId: userId }],
         {
           groupName: name,
+          type: type,
           userId: userId,
           name: username,
           groupId: groupId,
