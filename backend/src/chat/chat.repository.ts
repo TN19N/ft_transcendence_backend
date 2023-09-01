@@ -320,14 +320,14 @@ export class ChatRepository {
     });
   }
 
-  async createGroup(
+  createGroup(
     userId: string,
     name: string,
     type: GroupType,
     password?: string,
   ) {
-    await this.databaseService.$transaction(async (prisma) => {
-      await prisma.group.create({
+    return this.databaseService.$transaction(async (prisma) => {
+      const group = await prisma.group.create({
         data: {
           owner: { connect: { id: userId } },
           name: name,
@@ -347,6 +347,8 @@ export class ChatRepository {
           role: Role.OWNER,
         },
       });
+
+      return group;
     });
   }
 

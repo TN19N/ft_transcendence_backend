@@ -28,6 +28,7 @@ export enum GroupActionType {
   GROUP_DELETED = 'GROUP_DELETED',
   OWNERSHIP_TRANSFERMED = 'OWNERSHIP_TRANSFERMED',
   GROUP_UPDATED = 'GROUP_UPDATED',
+  GROUP_CREATED = 'GROUP_CREATED',
 }
 
 @WebSocketGateway({
@@ -123,6 +124,13 @@ export class ChatGateway implements OnGatewayConnection {
   }
 
   sendAction(actionType: GroupActionType, members: any[], payload: object) {
+    if (actionType === GroupActionType.GROUP_CREATED && members.length === 0) {
+      for (const id of this.connectedUsers.keys()) {
+        members.push({
+          userId: id,
+        });
+      }
+    }
     for (const member of members) {
       member.userId = member.userId ?? member.user?.id;
       if (this.connectedUsers.has(member.userId)) {
