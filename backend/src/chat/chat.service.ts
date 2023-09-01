@@ -327,7 +327,8 @@ export class ChatService {
         group.members,
         {
           groupId: groupId,
-          data: { name, type },
+          name,
+          type,
         },
       );
     } catch (error) {
