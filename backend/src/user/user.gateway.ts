@@ -45,6 +45,7 @@ export class UserGateway implements OnGatewayConnection {
     const userId = await this.authenticationService.validateJwtWbSocket(socket);
 
     if (!userId) {
+      console.log('user token is not valid!');
       return this.disconnect(socket);
     }
 
@@ -52,6 +53,7 @@ export class UserGateway implements OnGatewayConnection {
 
     socket.on('disconnect', async () => {
       console.log('user disconnected: ', userId);
+
       for (const [key, value] of this.connectedUsers.entries()) {
         if (value.includes(socket)) {
           this.connectedUsers.set(
@@ -147,6 +149,7 @@ export class UserGateway implements OnGatewayConnection {
   }
 
   private disconnect(socket: Socket) {
+    console.log('user disconnect with error ');
     socket.emit('error', 'Unauthorized');
     socket.disconnect(true);
   }
