@@ -223,7 +223,7 @@ export class ChatController {
 
   @Patch('group/:groupId/update')
   @HttpCode(HttpStatus.OK)
-  @Roles(Role.ADMIN)
+  @Roles(Role.OWNER)
   async updateGroup(
     @Param('groupId', ParseUUIDPipe) groupId: string,
     @Body() updateGroupDto: UpdateGroupDto,
