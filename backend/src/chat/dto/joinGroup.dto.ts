@@ -10,8 +10,6 @@ export class JoinGroupDto {
     maxLength: 20,
     example: 'strongPassword',
   })
-  @IsAlphanumeric()
-  @Length(6, 20)
   @IsOptional()
   password?: string;
 }
