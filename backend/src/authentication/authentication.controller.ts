@@ -14,15 +14,15 @@ import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { GoogleGuard, Intra42Guard, Jwt2faGuard, JwtGuard } from './guard';
 import { GetUserId } from './decorator';
 import { Response } from 'express';
-import { ConfigurationService } from 'src/configuration/configuration.service';
 import { TwofaDto } from 'src/user/dto';
+import { UserRepository } from 'src/user/user.repository';
 
 @Controller('v1/auth')
 @ApiTags('v1/auth')
 export class AuthenticationController {
   constructor(
     private authenticationService: AuthenticationService,
-    private configurationService: ConfigurationService,
+    private userRepository: UserRepository,
   ) {}
 
   @Get('intra42')
@@ -36,8 +36,15 @@ export class AuthenticationController {
       await this.authenticationService.generateLoginToken(userId);
     response.setHeader('Set-Cookie', `Authentication=${token}; Path=/`);
 
+    const { signup } = await this.userRepository.getUserById(userId);
+    if (signup) {
+      await this.userRepository.updateUser(userId, false);
+    }
+
     if (twofa) {
       response.redirect('/2fa');
+    } else if (signup) {
+      response.redirect('/signup');
     } else {
       response.redirect('/home');
     }
@@ -54,8 +61,15 @@ export class AuthenticationController {
       await this.authenticationService.generateLoginToken(userId);
     response.setHeader('Set-Cookie', `Authentication=${token}; Path=/`);
 
+    const { signup } = await this.userRepository.getUserById(userId);
+    if (signup) {
+      await this.userRepository.updateUser(userId, false);
+    }
+
     if (twofa) {
       response.redirect('/2fa');
+    } else if (signup) {
+      response.redirect('/signup');
     } else {
       response.redirect('/home');
     }
@@ -76,10 +90,11 @@ export class AuthenticationController {
     );
 
     if (isValid) {
-      const loginToken = (
-        await this.authenticationService.generateLoginToken(userId, false)
-      ).token;
-      response.setHeader('Set-Cookie', `Authentication=${loginToken}; Path=/`);
+      const { token } = await this.authenticationService.generateLoginToken(
+        userId,
+        false,
+      );
+      response.setHeader('Set-Cookie', `Authentication=${token}; Path=/`);
     } else {
       throw new ForbiddenException('wrong 2fa code');
     }
