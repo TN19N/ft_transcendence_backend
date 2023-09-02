@@ -278,6 +278,9 @@ export class ChatRepository {
           },
         },
       },
+      orderBy: {
+        createdAt: 'asc',
+      },
     });
   }
 
