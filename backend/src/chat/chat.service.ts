@@ -264,9 +264,11 @@ export class ChatService {
 
     await this.chatRepository.acceptGroupInvite(userId, groupId);
 
-    const members = await this.chatRepository.getGroupMembers(groupId);
+    const group = await this.chatRepository.getGroupById(groupId);
     const { name } = await this.userRepository.getProfile(userId);
-    this.chatGateway.sendAction(GroupActionType.USER_JOINED, members, {
+    this.chatGateway.sendAction(GroupActionType.USER_JOINED, group.members, {
+      groupName: group.name,
+      type: group.type,
       userId: userId,
       name: name,
       groupId: groupId,
@@ -387,6 +389,8 @@ export class ChatService {
     const { name } = await this.userRepository.getProfile(userId);
     this.chatGateway.sendAction(GroupActionType.USER_JOINED, members, {
       userId: userId,
+      groupName: group.name,
+      type: group.type,
       name: name,
       groupId: groupId,
     });
