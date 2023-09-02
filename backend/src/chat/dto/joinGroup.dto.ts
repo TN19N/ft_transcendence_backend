@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsAlphanumeric, IsOptional, Length } from 'class-validator';
+import { IsOptional } from 'class-validator';
 
 export class JoinGroupDto {
   @ApiProperty({
@@ -10,8 +10,6 @@ export class JoinGroupDto {
     maxLength: 20,
     example: 'strongPassword',
   })
-  @IsAlphanumeric()
-  @Length(6, 20)
   @IsOptional()
   password?: string;
 }
