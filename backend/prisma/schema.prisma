@@ -10,6 +10,7 @@ datasource db {
 model User {
   id                      String          @id @default(uuid())
   createdAt               DateTime        @default(now())
+  signup                        Boolean   @default(true)
 
   profile                 Profile?
   preferences             Preferences?

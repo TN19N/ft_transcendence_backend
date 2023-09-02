@@ -17,6 +17,13 @@ import { DatabaseService } from 'src/database/database.service';
 export class UserRepository {
   constructor(private databaseService: DatabaseService) {}
 
+  async updateUser(userId: string, signup: boolean) {
+    await this.databaseService.user.update({
+      where: { id: userId },
+      data: { signup: signup },
+    });
+  }
+
   async createAchievement(userId: string, achievementType: AchievementType) {
     let title = '';
     let discretion = '';
