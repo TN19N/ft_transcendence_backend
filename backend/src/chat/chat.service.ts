@@ -311,13 +311,20 @@ export class ChatService {
 
   async updateGroup(groupId: string, { name, type, password }: UpdateGroupDto) {
     const group = await this.chatRepository.getGroupById(groupId);
+    type = type ?? group.type;
 
-    if (type && type === GroupType.PROTECTED && type !== group.type) {
+    if (type === GroupType.PROTECTED && type !== group.type) {
       if (!password) {
         throw new BadRequestException('Password is required to update group');
       }
+    }
 
-      password = await bcrypt.hash(password, 10);
+    if (type === GroupType.PROTECTED) {
+      if (password) {
+        password = await bcrypt.hash(password, 10);
+      } else {
+        password = group.sensitiveData.password;
+      }
     } else {
       password = null;
     }
