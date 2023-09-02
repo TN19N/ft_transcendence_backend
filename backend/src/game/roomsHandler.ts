@@ -85,7 +85,9 @@ export default class RoomsGameHandler {
 
   onKeyPressed(client: Socket, key: string) {
     const roomRef = this.getRoomByClient(client);
-    if (!roomRef) return;
+    if (!roomRef) {
+      return client.disconnect();
+    }
     const val = keyPressed(key, roomRef.this);
 
     if (val) {

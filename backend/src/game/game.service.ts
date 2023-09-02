@@ -26,7 +26,12 @@ export class GameService {
   }
 
   onRowConnection(client: Socket, data: InvitationDto, id: string) {
-    this.clients.push(id);
+    if (this.clients.find((pid) => pid === id)) {
+      client.emit('error', 'multiple connection detected');
+      return client.disconnect();
+    } else {
+      this.clients.push(id);
+    }
 
     if (!data) {
       return this.cheakIfInvited(client, id);
@@ -85,6 +90,13 @@ export class GameService {
   }
 
   onNewConnection(client: Socket, id: string, speed: string) {
+    if (this.clients.find((pid) => pid === id)) {
+      client.emit('error', 'multiple connection detected');
+      return client.disconnect();
+    } else {
+      this.clients.push(id);
+    }
+
     const match = this.queue.addClientToQueue(client, id, speed);
     match.forEach((item) => {
       this.room.onNewMatch(item, speed);
