@@ -493,10 +493,21 @@ export class ChatService {
       const uniqueKey = `${message.senderId}|${message.receiverId}`;
 
       if (!dmPast.has(uniqueKey)) {
+        const isBan =
+          !!(await this.userRepository.getBan(
+            message.senderId,
+            message.receiverId,
+          )) ||
+          !!(await this.userRepository.getBan(
+            message.receiverId,
+            message.senderId,
+          ));
+
         dmPast.add(uniqueKey);
         dmPast.add(`${message.receiverId}|${message.senderId}`);
         messagesFiltered.push({
           createAt: message.createdAt,
+          isBan: isBan,
           id:
             message.senderId == userId ? message.receiverId : message.senderId,
           name:

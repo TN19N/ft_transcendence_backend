@@ -124,8 +124,13 @@ export class ChatRepository {
 
   async acceptGroupInvite(userId: string, groupId: string) {
     await this.databaseService.$transaction(async (prisma) => {
-      await prisma.groupInvite.deleteMany({
-        where: { receiverId: userId },
+      await prisma.groupInvite.delete({
+        where: {
+          GroupInviteId: {
+            groupId: groupId,
+            receiverId: userId,
+          },
+        },
       });
 
       await prisma.userGroup.create({
@@ -217,6 +222,15 @@ export class ChatRepository {
 
   async addUserToGroup(userId: string, groupId: string) {
     await this.databaseService.$transaction(async (prisma: PrismaClient) => {
+      await prisma.groupInvite.delete({
+        where: {
+          GroupInviteId: {
+            groupId: groupId,
+            receiverId: userId,
+          },
+        },
+      });
+
       await prisma.userGroup.create({
         data: {
           user: { connect: { id: userId } },

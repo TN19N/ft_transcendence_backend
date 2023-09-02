@@ -38,7 +38,6 @@ model User {
   sentGroupMessages       MessageGroup[]
 
   receivedGroupRequests   GroupInvite[]
-
 }
 
 enum Status {
