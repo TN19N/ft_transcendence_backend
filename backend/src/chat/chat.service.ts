@@ -503,11 +503,16 @@ export class ChatService {
             message.senderId,
           ));
 
+        const { status } = await this.userRepository.getProfile(
+          userId === message.senderId ? message.receiverId : message.senderId,
+        );
+
         dmPast.add(uniqueKey);
         dmPast.add(`${message.receiverId}|${message.senderId}`);
         messagesFiltered.push({
           createAt: message.createdAt,
           isBan: isBan,
+          status: status,
           id:
             message.senderId == userId ? message.receiverId : message.senderId,
           name:
