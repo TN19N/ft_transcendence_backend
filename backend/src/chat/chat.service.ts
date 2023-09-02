@@ -187,6 +187,10 @@ export class ChatService {
       throw new NotFoundException('User Not found in the group');
     }
 
+    if (user.role === Role.OWNER) {
+      throw new ForbiddenException('User is already an owner');
+    }
+
     if (user.role === Role.ADMIN) {
       throw new ConflictException('User is already an admin');
     }

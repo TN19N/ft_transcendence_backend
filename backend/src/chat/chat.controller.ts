@@ -128,7 +128,7 @@ export class ChatController {
 
   @Patch('group/:groupId/upgradeMember')
   @HttpCode(HttpStatus.OK)
-  @Roles(Role.OWNER)
+  @Roles(Role.ADMIN)
   async upgradeUser(
     @GetUserId() userId: string,
     @Param('groupId', ParseUUIDPipe) groupId: string,
