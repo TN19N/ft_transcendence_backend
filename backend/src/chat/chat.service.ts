@@ -367,7 +367,8 @@ export class ChatService {
       groupId,
       content,
     );
-    this.chatGateway.sendGroupMessage(group.members, group.name, message);
+
+    await this.chatGateway.sendGroupMessage(group.members, group.name, message);
   }
 
   async joinGroup(userId: string, groupId: string, { password }: JoinGroupDto) {
