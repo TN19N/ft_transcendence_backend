@@ -131,7 +131,7 @@ export class GameService {
   async disconnected(client: Socket, id: string) {
     this.clients = this.clients.filter((item) => item !== id);
 
-    const res: Room | null = await this.room.onDisconnect(client);
+    const res: Room | null = await this.room.onDisconnect(client, id);
     if (res) {
       return await this.saveGameRecord(res.p1, res.p2);
     }
