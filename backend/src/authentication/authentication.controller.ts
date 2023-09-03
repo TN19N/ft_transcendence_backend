@@ -36,15 +36,15 @@ export class AuthenticationController {
       await this.authenticationService.generateLoginToken(userId);
     response.setHeader('Set-Cookie', `Authentication=${token}; Path=/`);
 
-    const { signup } = await this.userRepository.getUserById(userId);
+    const { signup } = await this.userRepository.getSensitiveData(userId);
     if (signup) {
-      await this.userRepository.updateUser(userId, false);
+      await this.userRepository.updateSensitiveData(userId, { signup: false });
     }
 
     if (twofa) {
       response.redirect('/2fa');
     } else if (signup) {
-      response.redirect('/signup');
+      response.redirect('/editprofile');
     } else {
       response.redirect('/home');
     }
@@ -61,15 +61,15 @@ export class AuthenticationController {
       await this.authenticationService.generateLoginToken(userId);
     response.setHeader('Set-Cookie', `Authentication=${token}; Path=/`);
 
-    const { signup } = await this.userRepository.getUserById(userId);
+    const { signup } = await this.userRepository.getSensitiveData(userId);
     if (signup) {
-      await this.userRepository.updateUser(userId, false);
+      await this.userRepository.updateSensitiveData(userId, { signup: false });
     }
 
     if (twofa) {
       response.redirect('/2fa');
     } else if (signup) {
-      response.redirect('/signup');
+      response.redirect('/editprofile');
     } else {
       response.redirect('/home');
     }
