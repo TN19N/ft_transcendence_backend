@@ -10,7 +10,6 @@ datasource db {
 model User {
   id                      String          @id @default(uuid())
   createdAt               DateTime        @default(now())
-  signup                        Boolean   @default(true)
 
   profile                 Profile?
   preferences             Preferences?
@@ -95,6 +94,8 @@ model SensitiveData {
 
   intra42Id                     Int?      @unique
   googleId                      String?   @unique
+
+  signup                        Boolean   @default(true)
 
   twoFactorAuthenticationSecret String?
   iv                            String?
