@@ -14,6 +14,7 @@ CREATE TYPE "GroupType" AS ENUM ('PRIVATE', 'PUBLIC', 'PROTECTED');
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "signup" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -128,6 +129,7 @@ CREATE TABLE "Group" (
     "creatAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "name" TEXT NOT NULL,
     "type" "GroupType" NOT NULL,
+    "membersCount" INTEGER NOT NULL DEFAULT 1,
     "ownerId" TEXT NOT NULL,
 
     CONSTRAINT "Group_pkey" PRIMARY KEY ("id")
