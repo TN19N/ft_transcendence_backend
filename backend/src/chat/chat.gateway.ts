@@ -103,19 +103,31 @@ export class ChatGateway implements OnGatewayConnection {
     }
   }
 
-  sendGroupMessage(
+  async sendGroupMessage(
     members: UserGroup[],
     groupName: string,
     message: MessageGroup,
   ) {
     for (const member of members) {
       if (this.connectedUsers.has(member.userId)) {
+        const ban =
+          member.userId != message.senderId &&
+          (!!(await this.userRepository.getBan(
+            message.senderId,
+            member.userId,
+          )) ||
+            !!(await this.userRepository.getBan(
+              member.userId,
+              message.senderId,
+            )));
+
         this.connectedUsers.get(member.userId).forEach((socket) => {
           socket.emit('message', {
             type: MessageType.GROUP,
             payload: {
               groupName: groupName,
               ...message,
+              message: ban ? undefined : message.message,
               id: undefined,
             },
           });

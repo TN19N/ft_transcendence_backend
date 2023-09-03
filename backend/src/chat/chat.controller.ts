@@ -30,6 +30,7 @@ import { RoleGuard } from './guard';
 import { Roles } from './decorator';
 import { Role } from '@prisma/client';
 import { GroupActionType, ChatGateway } from './chat.gateway';
+import { UserRepository } from 'src/user/user.repository';
 
 @Controller('v1/chat')
 @UseGuards(JwtGuard, RoleGuard)
@@ -40,6 +41,7 @@ export class ChatController {
     private chatService: ChatService,
     private chatRepository: ChatRepository,
     private chatGateway: ChatGateway,
+    private userRepository: UserRepository,
   ) {}
 
   @Delete('group/:groupId/delete')
@@ -257,15 +259,36 @@ export class ChatController {
   @Get('group/:groupId/messages')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.MEMBER_MUTED)
-  async getGroup(@Param('groupId', ParseUUIDPipe) groupId: string) {
-    return (await this.chatRepository.getGroupMessages(groupId)).map(
-      (message) => {
-        return {
-          ...message,
-          senderName: message.sender.profile.name,
-          sender: undefined,
-        };
-      },
+  async getGroup(
+    @GetUserId() userId: string,
+    @Param('groupId', ParseUUIDPipe) groupId: string,
+  ) {
+    const banned = new Set<string>();
+    return await Promise.all(
+      (await this.chatRepository.getGroupMessages(groupId)).map(
+        async (message) => {
+          let ban: boolean = false;
+          const senderId = message.senderId;
+
+          if (senderId != userId && banned.has(message.senderId)) {
+            ban = true;
+          } else if (
+            senderId != userId &&
+            (!!(await this.userRepository.getBan(userId, senderId)) ||
+              !!(await this.userRepository.getBan(senderId, userId)))
+          ) {
+            banned.add(senderId);
+            ban = true;
+          }
+
+          return {
+            ...message,
+            message: ban ? undefined : message.message,
+            senderName: message.sender.profile.name,
+            sender: undefined,
+          };
+        },
+      ),
     );
   }
 
