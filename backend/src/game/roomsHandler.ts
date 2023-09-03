@@ -99,13 +99,20 @@ export default class RoomsGameHandler {
     }
   }
 
-  async onDisconnect(client: Socket) {
+  async onDisconnect(client: Socket, userId: string) {
     const thisRoom = this.getRoomByClient(client);
     if (!thisRoom) return null;
     const { room, other: p2 } = thisRoom;
     const oClinet = p2;
     if (room.interval) clearInterval(room.interval);
     this.Rooms = this.Rooms.filter((item) => item !== room);
+    if (room.p1.score != 5 && room.p2.score != 5) {
+      if (room.p1.id === userId) {
+        room.p1.score = -1;
+      } else {
+        room.p2.score = -1;
+      }
+    }
     oClinet.socket.emit('delay', 'You win');
     oClinet.socket.disconnect();
     return room;
