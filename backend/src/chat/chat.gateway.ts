@@ -108,6 +108,7 @@ export class ChatGateway implements OnGatewayConnection {
     groupName: string,
     message: MessageGroup,
   ) {
+    const { name } = await this.userRepository.getProfile(message.senderId);
     for (const member of members) {
       if (this.connectedUsers.has(member.userId)) {
         const ban =
@@ -125,6 +126,7 @@ export class ChatGateway implements OnGatewayConnection {
           socket.emit('message', {
             type: MessageType.GROUP,
             payload: {
+              senderName: name,
               groupName: groupName,
               ...message,
               message: ban ? undefined : message.message,

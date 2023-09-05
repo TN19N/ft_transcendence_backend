@@ -360,6 +360,11 @@ export class ChatService {
     groupId: string,
     { content }: MessageDto,
   ) {
+    const { role } = await this.chatRepository.getUserGroup(senderId, groupId);
+    if (role == Role.MEMBER_MUTED) {
+      throw new ConflictException('You are muted');
+    }
+
     const group = await this.chatRepository.getGroupById(groupId);
 
     const message = await this.chatRepository.createGroupMessage(
