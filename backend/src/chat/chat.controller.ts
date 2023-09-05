@@ -235,7 +235,7 @@ export class ChatController {
 
   @Post('group/:groupId/message')
   @HttpCode(HttpStatus.CREATED)
-  @Roles(Role.MEMBER)
+  @Roles(Role.MEMBER_MUTED)
   async sendGroupMessage(
     @GetUserId() userId: string,
     @Param('groupId', ParseUUIDPipe) groupId: string,
