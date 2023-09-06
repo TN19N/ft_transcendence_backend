@@ -45,7 +45,7 @@ export class ChatController {
   ) {}
 
   @Delete('group/:groupId/delete')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.OWNER)
   async deleteGroup(@Param('groupId', ParseUUIDPipe) groupId: string) {
     const members = await this.chatRepository.getGroupMembers(groupId);
@@ -56,7 +56,7 @@ export class ChatController {
   }
 
   @Patch('group/:groupId/transferOwnership')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.OWNER)
   async transferOwnership(
     @GetUserId() userId: string,
@@ -67,7 +67,7 @@ export class ChatController {
   }
 
   @Patch('group/:groupId/leave')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.MEMBER_MUTED)
   async leaveGroup(
     @GetUserId() userId: string,
@@ -77,7 +77,7 @@ export class ChatController {
   }
 
   @Patch('group/:groupId/unMute')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.ADMIN)
   async unMuteUser(
     @Param('groupId', ParseUUIDPipe) groupId: string,
@@ -87,7 +87,7 @@ export class ChatController {
   }
 
   @Patch('group/:groupId/mute')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.ADMIN)
   async muteUser(
     @GetUserId() userId: string,
@@ -114,7 +114,7 @@ export class ChatController {
   }
 
   @Patch('group/:groupId/downgradeMember')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.OWNER)
   async downgradeUser(
     @GetUserId() userId: string,
@@ -129,7 +129,7 @@ export class ChatController {
   }
 
   @Patch('group/:groupId/upgradeMember')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.ADMIN)
   async upgradeUser(
     @GetUserId() userId: string,
@@ -147,7 +147,7 @@ export class ChatController {
   }
 
   @Patch('group/:groupId/unBan')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.ADMIN)
   async unBanFromGroup(
     @Param('groupId', ParseUUIDPipe) groupId: string,
@@ -157,7 +157,7 @@ export class ChatController {
   }
 
   @Patch('group/:groupId/ban')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.ADMIN)
   async banFromGroup(
     @GetUserId() userId: string,
@@ -168,7 +168,7 @@ export class ChatController {
   }
 
   @Post('group/:groupId/invite')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.ADMIN)
   async inviteToGroup(
     @GetUserId() userId: string,
@@ -179,7 +179,7 @@ export class ChatController {
   }
 
   @Put('group/:groupId/acceptInvite')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async acceptInvite(
     @GetUserId() userId: string,
     @Param('groupId', ParseUUIDPipe) groupId: string,
@@ -208,7 +208,7 @@ export class ChatController {
   }
 
   @Delete('group/:groupId/invite')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.ADMIN)
   async removeGroupInvite(
     @Param('groupId', ParseUUIDPipe) groupId: string,
@@ -224,7 +224,7 @@ export class ChatController {
   }
 
   @Patch('group/:groupId/update')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.OWNER)
   async updateGroup(
     @Param('groupId', ParseUUIDPipe) groupId: string,
@@ -245,7 +245,7 @@ export class ChatController {
   }
 
   @Put('group/:groupId/unBanAndInvite')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.ADMIN)
   async unBanAndInvite(
     @GetUserId() userId: string,
@@ -293,7 +293,7 @@ export class ChatController {
   }
 
   @Post('group/:groupId/join')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async joinGroup(
     @GetUserId() userId: string,
     @Param('groupId', ParseUUIDPipe) groupId: string,
