@@ -53,15 +53,10 @@ export class ChatGateway implements OnGatewayConnection {
     const userId = await this.authenticationService.validateJwtWbSocket(socket);
 
     if (!userId) {
-      console.log('chat token is not valid!');
       return this.disconnect(socket);
     }
 
-    console.log('chat connected: ', userId, ', socketId: ', socket.id);
-
     socket.on('disconnect', async () => {
-      console.log('chat disconnected: ', userId, ', socketId: ', socket.id);
-
       for (const [key, value] of this.connectedUsers.entries()) {
         if (value.includes(socket)) {
           this.connectedUsers.set(
@@ -189,7 +184,6 @@ export class ChatGateway implements OnGatewayConnection {
   }
 
   private disconnect(socket: Socket) {
-    console.log('chat disconnect with error ');
     socket.emit('error', 'Unauthorized');
     socket.disconnect();
   }

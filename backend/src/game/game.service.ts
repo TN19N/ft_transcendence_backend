@@ -80,7 +80,6 @@ export class GameService {
     { score: s1, id: id1 }: UserData,
     { score: s2, id: id2 }: UserData,
   ) {
-    console.log('save game record: ', id1, ':', s1, ' vs ', id2, ':', s2);
     await this.userRepository.saveGameRecord(id1, id2, s1, s2);
     await this.saveAchievements(s1 > s2 ? id1 : id2);
   }
