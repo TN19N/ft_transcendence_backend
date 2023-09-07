@@ -23,3 +23,6 @@ with a nice user interface, a chat, and real-time notification and missaging.
   - jwt + passport
   - socket.io
   - docker and github action for CI
+
+## Demo:
+![](https://github.com/TN19N/ft_transcendence_backend/tree/main/demo/recorde.mkv)
